@@ -12,7 +12,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     population = self.__movements_supplier.create_population()
     fitness = self.__movements_supplier.compute_population_fitness(population)
 
-    best, min_fitness = self.__movements_supplier.get_best(population, fitness)
+    best_individual, best_fitness = self.__movements_supplier.get_best(population, fitness)
 
     for i in range(self.__ga_params.n_generations):
       population = self.__movements_supplier.select(population, fitness)
@@ -23,10 +23,11 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
       fitness = self.__movements_supplier.compute_population_fitness(population)
 
-      current_best, current_min_fitness = self.__movements_supplier.get_best(population, fitness)
+      current_best_individual, current_best_fitness = self.__movements_supplier.get_best(population, fitness)
 
-      if current_min_fitness < min_fitness:
-        best = current_best
-        min_fitness = current_min_fitness
+      # TODO: generalize to consider minimization and maximization case
+      if current_best_fitness < best_fitness:
+        best_individual = current_best_individual
+        best_fitness = current_best_fitness
 
-    return best, min_fitness
+    return best_individual, best_fitness
