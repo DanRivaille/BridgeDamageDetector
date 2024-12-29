@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from random import random
 
 from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
 
@@ -53,15 +54,39 @@ class GAMovementsSupplier(ABC):
     pass
 
   @abstractmethod
+  def make_children(self, father_1, father_2):
+    """
+    Creates two individuals applying some crossing strategy considering the parents' information
+    """
+    pass
+
   def crossing(self, population):
     """
     Creates a new population applying some crossing strategy
     """
-    pass
+    for i in range(1, self.__ga_params.population_size, 2):
+      rand = random()
+
+      if rand < self.__ga_params.p_cross:
+        population[i - 1], population[i] = self.make_children(population[i - 1], population[i])
+
+    return population
 
   @abstractmethod
+  def make_mutation(self, individual):
+    """
+    Creates a new individual applying some mutation strategy
+    """
+    pass
+
   def mutate(self, population):
     """
     Creates a new population applying some mutation strategy
     """
-    pass
+    for i in range(self.__ga_params.population_size):
+      rand = random()
+
+      if rand < self.__ga_params.p_mutate:
+        population[i] = self.make_mutation(population[i])
+
+    return population
