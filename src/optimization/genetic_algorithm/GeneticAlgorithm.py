@@ -1,4 +1,4 @@
-from OptimizationAlgorithm import OptimizationAlgorithm
+from src.optimization import OptimizationAlgorithm
 
 
 class GeneticAlgorithm(OptimizationAlgorithm):
