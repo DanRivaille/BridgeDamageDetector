@@ -1,0 +1,70 @@
+{
+  "id": "example_config",
+  "global_variables": {
+    "sequences_length": 1000
+  },
+  "train_params": {
+    "sequences_length": "sequences_length",
+    "batch_size": 64,
+    "learning_rate": 1e-3,
+    "num_epochs": 3
+  },
+  "test_params": {
+    "macroseq_length": 60,
+    "min_feature_threshold": 1e-6,
+    "max_feature_threshold": 1e-4,
+    "number_feature_thresholds_to_try": 10,
+    "min_macroseq_threshold": 0.4,
+    "max_macroseq_threshold": 0.5,
+    "number_macroseq_thresholds_to_try": 10
+  },
+  "data_params": {
+    "sensor_number": 0,
+    "train_data" : {
+      "first_date": "01/03/1998",
+      "last_date": "01/03/1998"
+    },
+    "validation_train_data": {
+      "first_date": "01/02/1998",
+      "last_date": "01/02/1998"
+    },
+    "validation_test_data": {
+      "first_date": "01/03/1998",
+      "last_date": "01/03/1998"
+    },
+    "test_data": {
+      "first_date": "10/08/1998",
+      "last_date": "10/08/1998"
+    }
+  },
+  "network_params": {
+    "type_model": "keras_model",
+    "optimizer": "adam",
+    "loss_function": "mean_squared_error",
+    "topology": [
+      {
+        "layer": "lstm_keras_layer",
+        "neurons": 32,
+        "input_shape": ["sequences_length", 1],
+        "return_sequences": false
+      },
+      {
+        "layer": "repeat_vector_keras_layer",
+        "neurons": "sequences_length"
+      },
+      {
+        "layer": "lstm_keras_layer",
+        "neurons": 32,
+        "input_shape": ["sequences_length", 1],
+        "return_sequences": true
+      },
+      {
+        "layer": "time_distributed_keras_layer",
+        "time_distributed_layer": {
+          "layer": "dense_keras_layer",
+          "neurons": 1
+        }
+      }
+    ]
+  }
+}
