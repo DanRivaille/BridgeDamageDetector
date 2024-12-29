@@ -1,8 +1,7 @@
 # Project files
 .idea/
 .DS_Store
-models_trained/ae_run
-models_trained/example
+models_trained/
 /venv
 
 
