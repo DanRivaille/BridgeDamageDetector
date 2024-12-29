@@ -10,7 +10,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
   def run(self):
     population = self.__movements_supplier.create_population()
-    fitness = self.__movements_supplier.calc_fitness_population(population)
+    fitness = self.__movements_supplier.compute_population_fitness(population)
 
     best, min_fitness = self.__movements_supplier.get_best(population, fitness)
 
@@ -21,7 +21,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
       population = self.__movements_supplier.mutate(population)
 
-      fitness = self.__movements_supplier.calc_fitness_population(population)
+      fitness = self.__movements_supplier.compute_population_fitness(population)
 
       current_best, current_min_fitness = self.__movements_supplier.get_best(population, fitness)
 
