@@ -1,43 +1,29 @@
 from src.optimization import OptimizationAlgorithm
+from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
+from src.optimization.genetic_algorithm.GeneticAlgorithmMovementsSupplier import GAMovementsSupplier
 
 
 class GeneticAlgorithm(OptimizationAlgorithm):
-  def __init__(self,
-               population_size,
-               n_genes,
-               n_generations,
-               p_cross,
-               p_mutate,):
-    self.population_size = None
-    self.n_genes = None
-    self.n_generations = None
-    self.p_cross = None
-    self.p_mutate = None
-    self.set_params(**locals())
+  def __init__(self, ga_params: GAParameters, movements_supplier: GAMovementsSupplier):
+    self.__ga_params: GAParameters = ga_params
+    self.__movements_supplier: GAMovementsSupplier = movements_supplier
 
-  def set_params(self, **params):
-    self.population_size = params['population_size']
-    self.n_genes = params['n_genes']
-    self.n_generations = params['n_generations']
-    self.p_cross = params['p_cross']
-    self.p_mutate = params['p_mutate']
+  def run(self):
+    population = self.__movements_supplier.create_population()
+    fitness = self.__movements_supplier.calc_fitness_population(population)
 
-  def run(self, **kwargs):
-    population = create_population(self.n_genes, self.population_size)
-    fitness = calc_fitness_population(population)
+    best, min_fitness = self.__movements_supplier.get_best(population, fitness)
 
-    best, min_fitness = get_best(population, fitness)
+    for i in range(self.__ga_params.n_generations):
+      population = self.__movements_supplier.select(population, fitness)
 
-    for i in range(self.n_generations):
-      population = select(population, fitness, 3, self.population_size)
+      population = self.__movements_supplier.crossing(population)
 
-      population = crossing(population, self.population_size, self.p_cross)
+      population = self.__movements_supplier.mutate(population)
 
-      population = mutate(population, self.population_size, self.p_mutate)
+      fitness = self.__movements_supplier.calc_fitness_population(population)
 
-      fitness = calc_fitness_population(population)
-
-      current_best, current_min_fitness = get_best(population, fitness)
+      current_best, current_min_fitness = self.__movements_supplier.get_best(population, fitness)
 
       if current_min_fitness < min_fitness:
         best = current_best

@@ -12,21 +12,21 @@ class GAMovementsSupplier(ABC):
     pass
 
   @abstractmethod
-  def calc_fitness_population(self):
+  def calc_fitness_population(self, population):
     pass
 
   @abstractmethod
-  def get_best(self):
+  def get_best(self, population, fitness) -> tuple:
     pass
 
   @abstractmethod
-  def select(self):
+  def select(self, population, fitness):
     pass
 
   @abstractmethod
-  def crossing(self):
+  def crossing(self, population):
     pass
 
   @abstractmethod
-  def mutate(self):
+  def mutate(self, population):
     pass
