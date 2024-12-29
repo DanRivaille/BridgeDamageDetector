@@ -8,7 +8,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     self.__ga_params: GAParameters = ga_params
     self.__movements_supplier: GAMovementsSupplier = movements_supplier
 
-  def run(self):
+  def run(self) -> tuple:
     population = self.__movements_supplier.create_population()
     fitness = self.__movements_supplier.compute_population_fitness(population)
 
