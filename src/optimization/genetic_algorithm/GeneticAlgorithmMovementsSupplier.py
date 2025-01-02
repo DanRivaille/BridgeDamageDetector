@@ -1,29 +1,34 @@
 from abc import ABC, abstractmethod
 from random import random
 
-from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
-
 import numpy as np
+
+from src.optimization.objective_function.ObjectiveFunction import ObjectiveFunction
+from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
 
 
 class GAMovementsSupplier(ABC):
   def __init__(self, ga_params: GAParameters):
     self.__ga_params: GAParameters = ga_params
 
-  def get_best(self, population, fitness: np.ndarray[float]) -> tuple:
+  @staticmethod
+  def get_best(objective_function: ObjectiveFunction, population, fitness: np.ndarray[float]) -> tuple:
     """
     Gets the best individual (and its fitness) in the population
     """
-    # TODO: generalize to use argmax or argmin
-    best_fitness_index = np.argmin(fitness)
+    if objective_function.is_minimization():
+      best_fitness_index = np.argmin(fitness)
+    else:
+      best_fitness_index = np.argmax(fitness)
 
     return population[best_fitness_index], fitness[best_fitness_index]
 
-  def compute_population_fitness(self, population) -> np.ndarray[float]:
+  @staticmethod
+  def compute_population_fitness(objective_function: ObjectiveFunction, population) -> np.ndarray[float]:
     """
     Computes the fitness of each individual of the population
     """
-    fitness = np.array([self.compute_individual_fitness(individual) for individual in population], dtype=float)
+    fitness = np.array([objective_function.evaluate(individual) for individual in population], dtype=float)
     return fitness
 
   def create_population(self):
@@ -36,13 +41,6 @@ class GAMovementsSupplier(ABC):
   def create_individual(self):
     """
     Creates a new individual
-    """
-    pass
-
-  @abstractmethod
-  def compute_individual_fitness(self, individual) -> float:
-    """
-    Computes an individual's fitness
     """
     pass
 
