@@ -1,4 +1,4 @@
-from src.optimization import OptimizationAlgorithm
+from src.optimization.optimization_algorithm import OptimizationAlgorithm
 from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
 from src.optimization.genetic_algorithm.GeneticAlgorithmMovementsSupplier import GAMovementsSupplier
 from src.optimization.objective_function.ObjectiveFunction import ObjectiveFunction

@@ -9,7 +9,7 @@ from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAPara
 
 class GAMovementsSupplier(ABC):
   def __init__(self, ga_params: GAParameters):
-    self.__ga_params: GAParameters = ga_params
+    self.ga_params: GAParameters = ga_params
 
   @staticmethod
   def get_best(objective_function: ObjectiveFunction, population, fitness: np.ndarray[float]) -> tuple:
@@ -35,7 +35,7 @@ class GAMovementsSupplier(ABC):
     """
     Creates a new population considering population_size of individuals
     """
-    return [self.create_individual() for i in range(self.__ga_params.population_size)]
+    return [self.create_individual() for i in range(self.ga_params.population_size)]
 
   @abstractmethod
   def create_individual(self):
@@ -62,10 +62,10 @@ class GAMovementsSupplier(ABC):
     """
     Creates a new population applying some crossing strategy
     """
-    for i in range(1, self.__ga_params.population_size, 2):
+    for i in range(1, self.ga_params.population_size, 2):
       rand = random()
 
-      if rand < self.__ga_params.p_cross:
+      if rand < self.ga_params.p_cross:
         population[i - 1], population[i] = self.make_children(population[i - 1], population[i])
 
     return population
@@ -81,10 +81,10 @@ class GAMovementsSupplier(ABC):
     """
     Creates a new population applying some mutation strategy
     """
-    for i in range(self.__ga_params.population_size):
+    for i in range(self.ga_params.population_size):
       rand = random()
 
-      if rand < self.__ga_params.p_mutate:
+      if rand < self.ga_params.p_mutate:
         population[i] = self.make_mutation(population[i])
 
     return population
