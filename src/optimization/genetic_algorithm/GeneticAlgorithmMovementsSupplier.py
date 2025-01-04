@@ -20,6 +20,12 @@ class GAMovementsSupplier(ABC):
       best_fitness_index = np.argmin(fitness)
     else:
       best_fitness_index = np.argmax(fitness)
+      """
+      Prints de testeo para visualizar las soluciones de KNP
+      """
+      peso,valor = objective_function.get_weight(population[best_fitness_index])
+      print(population[best_fitness_index])
+      print(f"Peso = {peso} | valor = {valor}")
 
     return population[best_fitness_index], fitness[best_fitness_index]
 
@@ -29,6 +35,7 @@ class GAMovementsSupplier(ABC):
     Computes the fitness of each individual of the population
     """
     fitness = np.array([objective_function.evaluate(individual) for individual in population], dtype=float)
+
     return fitness
 
   def create_population(self):
