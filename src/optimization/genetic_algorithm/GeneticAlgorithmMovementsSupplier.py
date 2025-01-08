@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from random import random
+from random import random, sample
 
 import numpy as np
 
@@ -8,6 +8,7 @@ from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAPara
 
 
 class GAMovementsSupplier(ABC):
+  
   def __init__(self, ga_params: GAParameters):
     self.ga_params: GAParameters = ga_params
 
@@ -20,12 +21,7 @@ class GAMovementsSupplier(ABC):
       best_fitness_index = np.argmin(fitness)
     else:
       best_fitness_index = np.argmax(fitness)
-      """
-      Prints de testeo para visualizar las soluciones de KNP
-      """
-      peso,valor = objective_function.get_weight(population[best_fitness_index])
-      print(population[best_fitness_index])
-      print(f"Peso = {peso} | valor = {valor}")
+      
 
     return population[best_fitness_index], fitness[best_fitness_index]
 
@@ -69,11 +65,19 @@ class GAMovementsSupplier(ABC):
     """
     Creates a new population applying some crossing strategy
     """
+    obj_proportion = (round(self.ga_params.n_genes * self.ga_params.proportion) / self.ga_params.n_genes) 
+
+
     for i in range(1, self.ga_params.population_size, 2):
       rand = random()
 
       if rand < self.ga_params.p_cross:
         population[i - 1], population[i] = self.make_children(population[i - 1], population[i])
+
+        if(self.ga_params.is_prop):
+          population[i - 1] = validate_prop(obj_proportion,population[i - 1], self.ga_params.n_genes)
+          population[i] = validate_prop(obj_proportion,population[i], self.ga_params.n_genes)
+
 
     return population
 
@@ -95,3 +99,34 @@ class GAMovementsSupplier(ABC):
         population[i] = self.make_mutation(population[i])
 
     return population
+
+  
+def get_prop(solution, n_genes):
+  cont1 = sum(solution)
+
+  return cont1 / n_genes
+
+def validate_prop(obj, solution, n_genes):
+  prop = get_prop(solution,n_genes)
+  current_ones = sum(solution)
+  target_ones = round(n_genes * 0.8)
+
+  if prop < obj:
+    print(f"Proporcion no valida. Prop = {prop}")
+    zero_indices = [i for i, bit in enumerate(solution) if bit == 0]
+    to_convert = target_ones - current_ones
+
+    to_flip = sample(zero_indices, to_convert)
+    for idx in to_flip:
+        solution[idx] = 1
+    print(f"Actual prop = {get_prop(solution, n_genes)}")
+
+  return solution
+  
+    
+
+
+
+
+
+

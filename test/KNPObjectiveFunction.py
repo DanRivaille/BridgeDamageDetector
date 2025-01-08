@@ -21,23 +21,21 @@ class KNPObjectiveFunction(ObjectiveFunction):
         value_cont += value
     
     # Las soluciones que excedan la capacidad tendran fitness 0
-    # La idea es que no incidan y no se consideren.git 
+    # La idea es que no incidan y no se consideren.
     if(weight_cont <= self.__k_capacity):
       return value_cont
     
     return 0
   
+
   def get_weight(self, solution) -> int:
     weight_cont = 0
-    value_cont = 0
-    weight_value = list(zip(self.__weights, self.__values))
     
     for i,bit in enumerate(solution):
       if bit == 1:
-        weight,value = weight_value[i]
+        weight = self.__weights[i]
         weight_cont += weight
-        value_cont += value
         
-    return weight_cont, value_cont
+    return weight_cont
 
 

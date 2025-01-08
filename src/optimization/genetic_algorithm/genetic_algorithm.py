@@ -32,5 +32,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
       if self.__function.compare_objective_values(current_best_fitness, best_fitness) > 0:
         best_individual = current_best_individual
         best_fitness = current_best_fitness
-
+        
+      # print(f"Gen {i+1} | Fitness = {best_fitness} | Weight = {self.__function.get_weight(best_individual)}")
     return best_individual, best_fitness
