@@ -11,25 +11,20 @@ from Instances import Instances
 from KNPInstance import KnapsackInstance
 from TSPInstance import TSPInstance
 
-
-population_size = 50
-n_generation = 500
-p_cross = 0.8
-p_mutate = 0.1
-proportion = 0.5
-
-# Parametro para Usar o No usar la validacion de proporciones.
-is_prop = False 
+population_size = 200
+n_generation = 2000
+p_cross = 0.5
+p_mutate = 0.2
 knp = True
 
 
 if(knp):
-    knapsack_parameters: Instances = KnapsackInstance("test/KNPInstances/In3.txt")
+    knapsack_parameters: Instances = KnapsackInstance("test/KNPInstances/P07.txt")
     
     n_genes = knapsack_parameters.num_items
-    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generation, p_cross, p_mutate, proportion, is_prop)
+    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generation, p_cross, p_mutate)
     knp_obj_function: ObjectiveFunction = KNPObjectiveFunction(False, knapsack_parameters.capacity, knapsack_parameters.weights, knapsack_parameters.values)
-    knp_movement_supplier: GAMovementsSupplier = KNPGAMovementSupplier(ga_params, 3)
+    knp_movement_supplier: GAMovementsSupplier = KNPGAMovementSupplier(ga_params)
 
     genetic_algorithm: OptimizationAlgorithm = GeneticAlgorithm(ga_params, knp_movement_supplier, knp_obj_function)
 
@@ -39,7 +34,7 @@ else:
     tsp_parameters: Instances = TSPInstance("test/TSPInstances/In1.txt")
 
     n_genes = tsp_parameters.tour_size
-    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generation, p_cross, p_mutate, proportion)
+    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generation, p_cross, p_mutate)
     tsp_obj_function: ObjectiveFunction = TSPObjectiveFunction(True, tsp_parameters.matrix)
     tsp_movement_supplier: GAMovementsSupplier = TSPGAMovementSupplier(ga_params, 3)
 
