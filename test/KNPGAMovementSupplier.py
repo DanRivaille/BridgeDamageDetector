@@ -1,38 +1,39 @@
-import random
-
-import numpy as np
-
 from src.optimization.genetic_algorithm.GeneticAlgorithmMovementsSupplier import GAMovementsSupplier
 from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
-
+import random
+import numpy as np
 
 class KNPGAMovementSupplier(GAMovementsSupplier):
-  def __init__(self, ga_params: GAParameters, k_select_param=3):
+  def __init__(self, ga_params: GAParameters):
     super().__init__(ga_params)
-    self.__k_select_param: int = k_select_param
+    
 
   def create_individual(self):
+   
+    return [random.choice([0, 1]) for _ in range(self.ga_params.n_genes)]
 
-    num_ones = round(self.ga_params.n_genes * self.ga_params.proportion)
-    num_zeros = self.ga_params.n_genes - num_ones
+  def select(self, population):
+    """
+    Selection using tournament-based strategy.
+    """
+    parents = []
+    random.shuffle(population)
 
-    individual = [1] * num_ones + [0] * num_zeros
+    # Tournament between first and second
+    if population[0][0] > population[1][0]:  
+        parents.append(population[0][1])    
+    else:
+        parents.append(population[1][1])
 
-    random.shuffle(individual)
+    # Tournament between third and fourth
+    if population[2][0] > population[3][0]:  
+        parents.append(population[2][1])    
+    else:
+        parents.append(population[3][1])
 
-    return individual
-
-  def select(self, population, fitness: np.ndarray[float]):
-    winners = []
-
-    for i in range(self.ga_params.population_size):
-      index_participants = random.sample(range(self.ga_params.population_size), self.__k_select_param)
-      winner_index = KNPGAMovementSupplier.__get_max_index(fitness, index_participants)
-      winners.append(population[winner_index].copy())
-      
-    return winners
-
-  def make_children(self, father_1, father_2):
+    return parents
+    
+  def crossing(self, father_1, father_2):
     
     crossover_point = random.randint(0, self.ga_params.n_genes - 1)
 
@@ -40,18 +41,17 @@ class KNPGAMovementSupplier(GAMovementsSupplier):
     child2 = father_2[0:crossover_point] + father_1[crossover_point:]
 
     return child1, child2
-
-  def make_mutation(self, individual):
-
-    for i in range(len(individual)):
-      prob = random.random()
-      if prob <= self.ga_params.p_mutate and individual[i] == 0:
-        individual[i] = 1
-      elif prob <= self.ga_params.p_mutate and individual[i] == 1:
-        individual[i] = 0
-        
-    return individual
+  
+  def mutate(self, genome, prob_mutacion):
     
+    for i in range(len(genome)):
+        prob = random.random()
+        if prob <= prob_mutacion and genome[i] == 0:
+            genome[i] = 1
+        elif prob <= prob_mutacion and genome[i] == 1:
+            genome[i] = 0 
+    
+    return genome
 
   @staticmethod
   def __get_max_index(fitness, index_participants):

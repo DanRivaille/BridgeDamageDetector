@@ -8,7 +8,7 @@ class KNPObjectiveFunction(ObjectiveFunction):
     self.__weights = weights
     self.__values = values
 
-  def evaluate(self, solution) -> int:
+  def evaluate(self, solution) -> float:
     weight_cont = 0
     value_cont = 0
 
@@ -20,12 +20,11 @@ class KNPObjectiveFunction(ObjectiveFunction):
         weight_cont += weight
         value_cont += value
     
-    # Las soluciones que excedan la capacidad tendran fitness 0
-    # La idea es que no incidan y no se consideren.
-    if(weight_cont <= self.__k_capacity):
-      return value_cont
+    if weight_cont <= self.__k_capacity:
+        return value_cont
     
     return 0
+        
   
 
   def get_weight(self, solution) -> int:
