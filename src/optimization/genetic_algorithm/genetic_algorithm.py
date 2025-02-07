@@ -16,8 +16,11 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
   def run(self) -> tuple:
     population = self.__movements_supplier.create_population()
+    print(population)
     fitness = self.__movements_supplier.compute_population_fitness(self.__function, population)
-
+    generacion_track = []
+    memo = []
+    print(fitness)
     best_individual, best_fitness = self.__movements_supplier.get_best(self.__function, population, fitness)
 
     population_with_fitness = list(zip(fitness,population))
@@ -30,13 +33,15 @@ class GeneticAlgorithm(OptimizationAlgorithm):
       while len(new_population) < self.__ga_params.population_size:
         offsping1, offspring2 = self.__movements_supplier.crossing(parents[0],parents[1])
         h1 = self.__movements_supplier.mutate(offsping1, self.__ga_params.p_mutate)
-
+        print(h1)
+        print(f"\nCalculando fitess Hijo . . .")
         new_fitness.append(self.__function.evaluate(h1))
         new_population.append(h1)
 
         if len(new_population) < self.__ga_params.population_size:
           h2 = self.__movements_supplier.mutate(offspring2, self.__ga_params.p_mutate)
-
+          print(h2)
+          print(f"\nCalculando fitess Hijo . . .")
           new_fitness.append(self.__function.evaluate(h2))
           new_population.append(h2)
 
@@ -53,18 +58,26 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         
       self.fitness_history.append(best_fitness)
 
+
+      generacion_track.append(min(population_with_fitness, key=lambda x: x[0])[0])
+      print(f"\nGeneración {i + 1}/{self.__ga_params.n_generations}, Mejor fitness: {best_fitness}\n")
+
       if(self.validate_termination(fitness)): return best_individual, best_fitness
 
+                
+    print("===============================================")
+    for i in range(1, self.__ga_params.n_generations + 1):
+        print(f"Generacion {i} | Mejor Fitness = {generacion_track[i-1]}")
+    print()
 
     return best_individual, best_fitness
   
-  def get_history(self):
-    return self.fitness_history
+  
 
   def generate_new_population(self, new_population_with_fitness, population_with_fitness):
 
     temp_population = new_population_with_fitness + population_with_fitness
-    temp_population.sort(key=lambda x: x[0], reverse=True)
+    temp_population.sort(key=lambda x: x[0])
 
     return temp_population[0:self.__ga_params.population_size]
 
@@ -82,3 +95,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
       return True
     else:
       return False
+    
+  def get_history(self):
+    return self.fitness_history

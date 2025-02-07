@@ -32,8 +32,9 @@ class GAMovementsSupplier(ABC):
     Computes the fitness of each individual of the population
     """
     fitness = np.array([objective_function.evaluate(individual) for individual in population], dtype=float)
-
+    
     return fitness
+
 
   def create_population(self):
     """
@@ -63,7 +64,6 @@ class GAMovementsSupplier(ABC):
     Creates two individuals applying some crossing strategy considering the parents' information
     """
     pass
-
 
 
   @abstractmethod
