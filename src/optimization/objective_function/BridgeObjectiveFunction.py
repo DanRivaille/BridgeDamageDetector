@@ -24,7 +24,6 @@ class BridgeObjectiveFunction(ObjectiveFunction):
 
     train_error = []
     validation_error = []
-    
 
     for epoch in range(self.__num_epochs):
       valid_loss = 0
@@ -40,9 +39,7 @@ class BridgeObjectiveFunction(ObjectiveFunction):
         loss.backward()
         optimizer.step()
       
-      
       for validation_batch in self.__validation_loader:
-          
         validation_signals = validation_batch.to(self.__device_to_use)
         # Revisar - calcular promedio
         val_output = model(validation_signals)
@@ -58,7 +55,6 @@ class BridgeObjectiveFunction(ObjectiveFunction):
       validation_error.append(valid_loss/len(self.__validation_loader))
       print(f"validation_loss = {valid_loss/len(self.__validation_loader)}")
 
-      
       print(f'epoch [{epoch + 1}/{self.__num_epochs}], loss:{loss.item(): .4f}')
         
     return validation_error[-1]
@@ -78,9 +74,7 @@ class BridgeObjectiveFunction(ObjectiveFunction):
     promedio_loss = sum(validation_error)/len(validation_error)
     print(f"validation_loss = {promedio_loss}")
 
-        
     return promedio_loss
-
 
   def evaluate(self, mask) -> float:
     array = mask.numpy()  
@@ -101,7 +95,6 @@ class BridgeObjectiveFunction(ObjectiveFunction):
   
   def apply_pruning(self, modelo, mask):
     mask = mask.to(self.__device_to_use)
-    
 
     if modelo.layer_to_mask == "first":
       mask = mask.unsqueeze(1).expand(-1, modelo.input_length)

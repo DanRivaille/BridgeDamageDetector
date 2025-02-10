@@ -28,6 +28,7 @@ if __name__ == '__main__':
     train_data, validation_data = load_data(config_params, is_train=True)
 
     device_to_use = __get_device()
+    print(device_to_use)
 
     # Create the model - train params
     num_epochs = config_params.get_params('train_params')['num_epochs']
@@ -43,7 +44,6 @@ if __name__ == '__main__':
     n_generations = config_params.get_params('ga_params')['n_generations']
     p_mutate = config_params.get_params('ga_params')['p_mutate']
     proportion_rate = config_params.get_params('ga_params')['proportion_rate']
-    
 
     train_set = CustomDataset(train_data)
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=False)
@@ -65,22 +65,18 @@ if __name__ == '__main__':
         model = Autoencoder(sequences_length, to_mask)
         model.to(device_to_use)
 
-
     # Entrenar modelo.
-    
-    
-    ga_params: GAParameters = GAParameters(population_size,n_genes,n_generations,p_mutate, proportion_rate)
-    bridge_obj_function: ObjectiveFunction = BridgeObjectiveFunction(True, model, train_loader,validation_loader,learning_rate, num_epochs, device_to_use,
+    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generations, p_mutate, proportion_rate)
+    bridge_obj_function: ObjectiveFunction = BridgeObjectiveFunction(True, model, train_loader, validation_loader,
+                                                                     learning_rate, num_epochs, device_to_use,
                                                                      proportion_rate)
     bridge_movement_supplier: GAMovementsSupplier = BridgeMovementSupplier(ga_params)
 
-    genetic_algorithm: OptimizationAlgorithm = GeneticAlgorithm(ga_params, bridge_movement_supplier, bridge_obj_function, )
+    genetic_algorithm: OptimizationAlgorithm = GeneticAlgorithm(ga_params, bridge_movement_supplier, bridge_obj_function)
     start_time = time.time()
     best_solution, best_fitness = genetic_algorithm.run()
     print(f"Tiempo de ejecucion = {time.time() - start_time}")
     print(f"Solution = {best_solution} | Fitness = {best_fitness}")
-
-
 
     if args.save:
         # Save the results
