@@ -4,8 +4,6 @@ import random
 
 from torch import nn
 from torch.optim import Adam
-from src.Plotter import Plotter
-from torch import save
 
 
 def train_mask(model, train_loader, validation_loader, neuron_mask,learning_rate, num_epochs, device_to_use):

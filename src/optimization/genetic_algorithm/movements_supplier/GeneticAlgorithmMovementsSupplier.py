@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from random import random, sample, randint
 
 import numpy as np
 
@@ -8,7 +7,6 @@ from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAPara
 
 
 class GAMovementsSupplier(ABC):
-  
   def __init__(self, ga_params: GAParameters):
     self.ga_params: GAParameters = ga_params
 
@@ -21,20 +19,16 @@ class GAMovementsSupplier(ABC):
       best_fitness_index = np.argmin(fitness)
     else:
       best_fitness_index = np.argmax(fitness)
-      
 
     return population[best_fitness_index], fitness[best_fitness_index]
 
-  
   @staticmethod
   def compute_population_fitness(objective_function: ObjectiveFunction, population) -> np.ndarray[float]:
     """
     Computes the fitness of each individual of the population
     """
     fitness = np.array([objective_function.evaluate(individual) for individual in population], dtype=float)
-    
     return fitness
-
 
   def create_population(self):
     """
@@ -49,14 +43,12 @@ class GAMovementsSupplier(ABC):
     """
     pass
 
-  
   @abstractmethod
   def select(self, population):
     """
     Creates a new population applying some selecting strategy
     """
     pass
-
 
   @abstractmethod
   def crossing(self, father_1, father_2):
@@ -65,19 +57,9 @@ class GAMovementsSupplier(ABC):
     """
     pass
 
-
   @abstractmethod
   def mutate(self, individual):
     """
     Creates a new individual applying some mutation strategy
     """
     pass
-
-  
-    
-
-
-
-
-
-

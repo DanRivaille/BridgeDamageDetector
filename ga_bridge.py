@@ -1,23 +1,21 @@
 import os
 import time
-from torch import nn
 from torch.utils.data import DataLoader
-from torch.optim import Adam
 from torch import save
 from torch import load
 from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
-from src.optimization.genetic_algorithm.GeneticAlgorithmMovementsSupplier import GAMovementsSupplier
+from src.optimization.genetic_algorithm.movements_supplier.GeneticAlgorithmMovementsSupplier import GAMovementsSupplier
 from src.optimization.optimization_algorithm import OptimizationAlgorithm
 from src.optimization.genetic_algorithm.genetic_algorithm import GeneticAlgorithm
 from src.optimization.objective_function.ObjectiveFunction import ObjectiveFunction
-from src.CommonPath import CommonPath
-from src.ConfigParams import ConfigParams
-from src.ParserArguments import ParserArguments
+from src.damage_detector.CommonPath import CommonPath
+from src.damage_detector.ConfigParams import ConfigParams
+from src.damage_detector.ParserArguments import ParserArguments
 from src.models.Autoencoder import Autoencoder
 from src.models.CustomDataset import CustomDataset
-from src.utils import __get_device, build_model_folder_path, load_data
-from src.BridgeObjectiveFunction import BridgeObjectiveFunction
-from src.BridgeMovementsSupplier import BridgeMovementSupplier
+from src.damage_detector.utils import __get_device, build_model_folder_path, load_data
+from src.optimization.objective_function.BridgeObjectiveFunction import BridgeObjectiveFunction
+from src.optimization.genetic_algorithm.movements_supplier.BridgeMovementsSupplier import BridgeMovementSupplier
 
 if __name__ == '__main__':
     args = ParserArguments()

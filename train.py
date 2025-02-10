@@ -6,14 +6,13 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 from torch import save
 
-from src.History import History
-from src.CommonPath import CommonPath
-from src.ConfigParams import ConfigParams
-from src.ParserArguments import ParserArguments
-from src.Plotter import Plotter
+from src.damage_detector.History import History
+from src.damage_detector.CommonPath import CommonPath
+from src.damage_detector.ConfigParams import ConfigParams
+from src.damage_detector.ParserArguments import ParserArguments
 from src.models.Autoencoder import Autoencoder
 from src.models.CustomDataset import CustomDataset
-from src.utils import __get_device, build_model_folder_path, load_data
+from src.damage_detector.utils import __get_device, build_model_folder_path, load_data
 
 
 if __name__ == '__main__':

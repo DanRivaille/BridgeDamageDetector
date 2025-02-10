@@ -1,8 +1,9 @@
 from src.optimization.optimization_algorithm import OptimizationAlgorithm
 from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
-from src.optimization.genetic_algorithm.GeneticAlgorithmMovementsSupplier import GAMovementsSupplier
+from src.optimization.genetic_algorithm.movements_supplier.GeneticAlgorithmMovementsSupplier import GAMovementsSupplier
 from src.optimization.objective_function.ObjectiveFunction import ObjectiveFunction
 from collections import Counter
+
 
 class GeneticAlgorithm(OptimizationAlgorithm):
   def __init__(self,
@@ -23,7 +24,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     print(fitness)
     best_individual, best_fitness = self.__movements_supplier.get_best(self.__function, population, fitness)
 
-    population_with_fitness = list(zip(fitness,population))
+    population_with_fitness = list(zip(fitness, population))
 
     for i in range(self.__ga_params.n_generations):
       new_population = []
@@ -31,7 +32,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
       parents = self.__movements_supplier.select(population_with_fitness)
 
       while len(new_population) < self.__ga_params.population_size:
-        offsping1, offspring2 = self.__movements_supplier.crossing(parents[0],parents[1])
+        offsping1, offspring2 = self.__movements_supplier.crossing(parents[0], parents[1])
         h1 = self.__movements_supplier.mutate(offsping1, self.__ga_params.p_mutate)
         print(h1)
         print(f"\nCalculando fitess Hijo . . .")
@@ -45,34 +46,30 @@ class GeneticAlgorithm(OptimizationAlgorithm):
           new_fitness.append(self.__function.evaluate(h2))
           new_population.append(h2)
 
-      new_population_with_fitness = list(zip(new_fitness,new_population))
-      population_with_fitness = self.generate_new_population(new_population_with_fitness,population_with_fitness)
+      new_population_with_fitness = list(zip(new_fitness, new_population))
+      population_with_fitness = self.generate_new_population(new_population_with_fitness, population_with_fitness)
 
-      fitness, population  = zip(*population_with_fitness)
+      fitness, population = zip(*population_with_fitness)
       current_best_individual, current_best_fitness = self.__movements_supplier.get_best(self.__function, population,
                                                                                          fitness)
 
       if self.__function.compare_objective_values(current_best_fitness, best_fitness) > 0:
         best_individual = current_best_individual
         best_fitness = current_best_fitness
-        
-      self.fitness_history.append(best_fitness)
 
+      self.fitness_history.append(best_fitness)
 
       generacion_track.append(min(population_with_fitness, key=lambda x: x[0])[0])
       print(f"\nGeneración {i + 1}/{self.__ga_params.n_generations}, Mejor fitness: {best_fitness}\n")
 
-      if(self.validate_termination(fitness)): return best_individual, best_fitness
+      if (self.validate_termination(fitness)): return best_individual, best_fitness
 
-                
     print("===============================================")
     for i in range(1, self.__ga_params.n_generations + 1):
-        print(f"Generacion {i} | Mejor Fitness = {generacion_track[i-1]}")
+      print(f"Generacion {i} | Mejor Fitness = {generacion_track[i - 1]}")
     print()
 
     return best_individual, best_fitness
-  
-  
 
   def generate_new_population(self, new_population_with_fitness, population_with_fitness):
 
@@ -83,7 +80,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
   def validate_termination(self, fitness):
     fitness_count = Counter(fitness)
-    
+
     total_gen = len(fitness)
     limit = total_gen * 0.95
 
@@ -95,6 +92,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
       return True
     else:
       return False
-    
+
   def get_history(self):
     return self.fitness_history

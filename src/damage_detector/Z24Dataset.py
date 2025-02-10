@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 import numpy as np
 from scipy.io import loadmat
 
-from src.CommonPath import CommonPath
-from src.ConfigParams import ConfigParams
-from src.DatasetType import DatasetType
+from src.damage_detector.CommonPath import CommonPath
+from src.damage_detector.ConfigParams import ConfigParams
+from src.damage_detector.DatasetType import DatasetType
 
 
 def stack_arrays(stacked_array: np.ndarray, new_array: np.ndarray) -> np.ndarray:

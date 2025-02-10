@@ -1,13 +1,10 @@
 from src.optimization.objective_function.ObjectiveFunction import ObjectiveFunction
-import torch
 import copy
-import random
 import numpy as np
 from torch.nn.utils import prune
 from torch import nn
 from torch.optim import Adam
-from src.Plotter import Plotter
-from torch import save
+
 
 class BridgeObjectiveFunction(ObjectiveFunction):
   def __init__(self, is_minimization: bool, model, train_loader, validation_loader, learning_rate, num_epochs,
