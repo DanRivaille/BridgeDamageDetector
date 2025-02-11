@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.CommonPath import CommonPath
+from src.damage_detector.CommonPath import CommonPath
 
 
 class Plotter:

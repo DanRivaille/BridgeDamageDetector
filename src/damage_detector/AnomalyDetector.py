@@ -5,8 +5,8 @@ from sklearn.metrics import f1_score, roc_auc_score, confusion_matrix
 from torch import nn, no_grad
 from torch.utils.data import DataLoader
 
-from src.Results import Results
-from src.ConfigParams import ConfigParams
+from src.damage_detector.Results import Results
+from src.damage_detector.ConfigParams import ConfigParams
 
 
 class AnomalyDetector:

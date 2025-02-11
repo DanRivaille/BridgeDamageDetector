@@ -4,11 +4,10 @@ import numpy as np
 from torch.cuda import is_available
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler
 
-from src.Plotter import Plotter
-from src.CommonPath import CommonPath
-from src.ConfigParams import ConfigParams
-from src.DatasetType import DatasetType
-from src.Z24Dataset import load
+from src.damage_detector.CommonPath import CommonPath
+from src.damage_detector.ConfigParams import ConfigParams
+from src.damage_detector.DatasetType import DatasetType
+from src.damage_detector.Z24Dataset import load
 
 
 def __get_device() -> str:

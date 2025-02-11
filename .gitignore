@@ -3,6 +3,7 @@
 .DS_Store
 models_trained/
 /venv
+/src/damage_detector/CommonPath.py
 
 
 # Byte-compiled / optimized / DLL files

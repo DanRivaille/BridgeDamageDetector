@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 
-from src.optimization.genetic_algorithm.GeneticAlgorithmMovementsSupplier import GAMovementsSupplier
+from src.optimization.genetic_algorithm.movements_supplier.GeneticAlgorithmMovementsSupplier import GAMovementsSupplier
 from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
 
 
