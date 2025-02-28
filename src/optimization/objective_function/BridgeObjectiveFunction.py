@@ -167,8 +167,8 @@ class BridgeObjectiveFunction(ObjectiveFunction):
       mask = mask.unsqueeze(1).expand(-1, modelo.decoder[0].in_features)
       prune.custom_from_mask(modelo.decoder[0], name='weight', mask=mask)
 
-  # def get_history(self) -> dict:
-  #   sort_history = dict(sorted(self.__historical_fitness.items(), key=lambda item: item[1], reverse=True))
+  def get_history(self) -> dict:
+    sort_history = dict(sorted(self.__historical_fitness.items(), key=lambda item: item[1], reverse=True))
 
-  #   return sort_history
+    return sort_history
       
