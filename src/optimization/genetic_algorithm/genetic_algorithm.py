@@ -13,15 +13,11 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     self.__ga_params: GAParameters = ga_params
     self.__movements_supplier: GAMovementsSupplier = movements_supplier
     self.__function: ObjectiveFunction = objective_function
-    self.fitness_history = []
 
   def run(self) -> tuple:
     population = self.__movements_supplier.create_population()
-    print(population)
     fitness = self.__movements_supplier.compute_population_fitness(self.__function, population)
     generacion_track = []
-    memo = []
-    print(fitness)
     best_individual, best_fitness = self.__movements_supplier.get_best(self.__function, population, fitness)
 
     population_with_fitness = list(zip(fitness, population))
@@ -57,18 +53,19 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         best_individual = current_best_individual
         best_fitness = current_best_fitness
 
-      self.fitness_history.append(best_fitness)
-
       generacion_track.append(min(population_with_fitness, key=lambda x: x[0])[0])
       print(f"\nGeneración {i + 1}/{self.__ga_params.n_generations}, Mejor fitness: {best_fitness}\n")
 
-      if (self.validate_termination(fitness)): return best_individual, best_fitness
+      if (self.validate_termination(fitness)): 
+        print(self.__function.get_history())
+        return best_individual, best_fitness
 
     print("===============================================")
     for i in range(1, self.__ga_params.n_generations + 1):
       print(f"Generacion {i} | Mejor Fitness = {generacion_track[i - 1]}")
     print()
 
+    print(self.__function.get_history())
     return best_individual, best_fitness
 
   def generate_new_population(self, new_population_with_fitness, population_with_fitness):
@@ -93,5 +90,3 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     else:
       return False
 
-  def get_history(self):
-    return self.fitness_history

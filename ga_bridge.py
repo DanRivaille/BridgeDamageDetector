@@ -11,7 +11,7 @@ from src.optimization.objective_function.ObjectiveFunction import ObjectiveFunct
 from src.damage_detector.CommonPath import CommonPath
 from src.damage_detector.ConfigParams import ConfigParams
 from src.damage_detector.ParserArguments import ParserArguments
-from src.models.Autoencoder import Autoencoder
+from src.models.AutoencoderGA import Autoencoder
 from src.models.CustomDataset import CustomDataset
 from src.damage_detector.utils import __get_device, build_model_folder_path, load_data
 from src.optimization.objective_function.BridgeObjectiveFunction import BridgeObjectiveFunction
@@ -20,22 +20,18 @@ from src.optimization.genetic_algorithm.movements_supplier.BridgeMovementsSuppli
 if __name__ == '__main__':
     args = ParserArguments()
 
-    # Load configs
     config_params = ConfigParams.load(os.path.join(CommonPath.CONFIG_FILES_FOLDER.value, args.config_filename))
-
     sequences_length = config_params.get_params('global_variables').get('sequences_length')
-    # Load data
+
     train_data, validation_data = load_data(config_params, is_train=True)
 
     device_to_use = __get_device()
     print(device_to_use)
 
-    # Create the model - train params
     num_epochs = config_params.get_params('train_params')['num_epochs']
     batch_size = config_params.get_params('train_params')['batch_size']
     learning_rate = config_params.get_params('train_params')['learning_rate']
 
-    # Ga params
     to_mask = config_params.get_params('ga_params')['to_mask']
     
     n_genes = config_params.get_params('mask_n_genes')[to_mask]
