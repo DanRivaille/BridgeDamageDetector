@@ -5,6 +5,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from torch import save
+import torch.optim.lr_scheduler as lr_scheduler
 
 from src.damage_detector.History import History
 from src.damage_detector.CommonPath import CommonPath
@@ -22,7 +23,6 @@ if __name__ == '__main__':
     config_params = ConfigParams.load(os.path.join(CommonPath.CONFIG_FILES_FOLDER.value, args.config_filename))
 
     sequences_length = config_params.get_params('global_variables').get('sequences_length')
-    n_features = 1
 
     # Load data
     train_data, validation_data = load_data(config_params, is_train=True)
@@ -45,6 +45,7 @@ if __name__ == '__main__':
 
     criterion = nn.MSELoss()
     optimizer = Adam(model.parameters(), lr=learning_rate)
+    scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.1, total_iters=30)
 
     start_time = time.time()
 
@@ -62,6 +63,9 @@ if __name__ == '__main__':
             loss.backward()
             optimizer.step()
 
+        if epoch > 20:
+            scheduler.step()
+
         for validation_batch in validation_loader:
             validation_signals = validation_batch.to(device_to_use)
 
@@ -72,7 +76,7 @@ if __name__ == '__main__':
         validation_error.append(validation_loss.item())
 
         
-        print(f'epoch [{epoch + 1}/{num_epochs}], loss:{loss.item(): .4f}, valid_loss:{validation_loss.item(): .4f}')
+        print(f'epoch [{epoch + 1}/{num_epochs}], loss:{loss.item(): .4f}, valid_loss:{validation_loss.item(): .4f}, lr:{optimizer.param_groups[0]["lr"]}')
         
 
     elapsed_time = time.time() - start_time
