@@ -1,13 +1,13 @@
 {
   "id": "full_config_ae",
   "global_variables": {
-    "sequences_length": 512
+    "sequences_length": 1000
   },
   "train_params": {
     "sequences_length": "sequences_length",
     "batch_size": 64,
     "learning_rate": 1e-3,
-    "num_epochs": 30
+    "num_epochs": 50
   },
   "ga_params": {
     "population_size": 20,
@@ -22,7 +22,7 @@
     "decoder": 32
   },
   "test_params": {
-    "macroseq_length": 60,
+    "macroseq_length": 100,
     "min_feature_threshold": 1e-5,
     "max_feature_threshold": 1e-2,
     "number_feature_thresholds_to_try": 50,
@@ -33,24 +33,23 @@
   "data_params": {
     "sensor_number": 0,
     "train_data" : {
-      "first_date": "01/02/1998",
-      "last_date": "08/02/1998"
+      "first_date": "01/03/1998",
+      "last_date": "30/03/1998"
     },
     "validation_train_data": {
-      "first_date": "01/03/1998",
-      "last_date": "08/03/1998"
+      "first_date": "01/02/1998",
+      "last_date": "07/02/1998"
     },
     "validation_test_data": {
-      "first_date": "22/03/1998",
-      "last_date": "10/04/1998"
+      "first_date": "10/04/1998",
+      "last_date": "24/04/1998"
     },
     "test_data": {
       "first_date": "10/08/1998",
       "last_date": "25/08/1998"
     }
   },
-
- "network_params": {
+  "network_params": {
     "type_model": "keras_model",
     "optimizer": "adam",
     "loss_function": "mean_squared_error",
