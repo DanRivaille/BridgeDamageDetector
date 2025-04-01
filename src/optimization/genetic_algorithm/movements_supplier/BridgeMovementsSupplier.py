@@ -32,19 +32,22 @@ class BridgeMovementSupplier(GAMovementsSupplier):
 
     return parents
 
-  def crossing(self, padre1, padre2):
-    puntoCruce = random.randint(1, len(padre1) - 1)
-    hijo1 = torch.cat((padre1[:puntoCruce], padre2[puntoCruce:]))
-    hijo2 = torch.cat((padre2[:puntoCruce], padre1[puntoCruce:]))
+  def crossing(self, father_1, father_2):
+    if random.random() <= self.ga_params.p_cross:
+      cross_point = random.randint(1, len(father_1) - 1)
+      child_1 = torch.cat((father_1[:cross_point], father_2[cross_point:]))
+      child_2 = torch.cat((father_2[:cross_point], father_1[cross_point:]))
 
-    return hijo1, hijo2
+      return child_1, child_2
+    else:
+      return father_1, father_2
 
-  def mutate(self, genome, prob_mutacion):
+  def mutate(self, genome):
     for i in range(len(genome)):
       prob = random.random()
-      if prob <= prob_mutacion and genome[i] == 0:
+      if prob <= self.ga_params.p_mutate and genome[i] == 0:
         genome[i] = 1
-      elif prob <= prob_mutacion and genome[i] == 1:
+      elif prob <= self.ga_params.p_mutate and genome[i] == 1:
         genome[i] = 0
 
     return genome

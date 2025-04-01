@@ -28,17 +28,14 @@ if __name__ == '__main__':
     device_to_use = __get_device()
     print(device_to_use)
 
-    num_epochs = config_params.get_params('train_params')['num_epochs']
     batch_size = config_params.get_params('train_params')['batch_size']
-    learning_rate = config_params.get_params('train_params')['learning_rate']
-
     to_mask = config_params.get_params('ga_params')['to_mask']
-    
-    n_genes = config_params.get_params('mask_n_genes')[to_mask]
 
+    n_genes = config_params.get_params('mask_n_genes')[to_mask]
     population_size = config_params.get_params('ga_params')['population_size']
     n_generations = config_params.get_params('ga_params')['n_generations']
     p_mutate = config_params.get_params('ga_params')['p_mutate']
+    p_cross = config_params.get_params('ga_params')['p_cross']
     proportion_rate = config_params.get_params('ga_params')['proportion_rate']
 
     train_set = CustomDataset(train_data)
@@ -47,25 +44,18 @@ if __name__ == '__main__':
     validation_set = CustomDataset(validation_data)
     validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=False)
 
-    load_modelo = True
+    model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
+    model_path = os.path.join(model_folder, 'model_trained.pth')
 
-    if(load_modelo):
-        model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
-        model_path = os.path.join(model_folder, 'model_trained.pth')
-
-        model = Autoencoder(sequences_length, to_mask)
-        model.load_state_dict(load(model_path))
-        model.eval()
-        model.to(device_to_use)
-    else:
-        model = Autoencoder(sequences_length, to_mask)
-        model.to(device_to_use)
+    model = Autoencoder(sequences_length, to_mask)
+    model.load_state_dict(load(model_path))
+    model.eval()
+    model.to(device_to_use)
 
     # Entrenar modelo.
-    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generations, p_mutate, proportion_rate)
+    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generations, p_mutate, p_cross, proportion_rate)
     bridge_obj_function: ObjectiveFunction = BridgeObjectiveFunction(True, model, train_loader, validation_loader,
-                                                                     learning_rate, num_epochs, device_to_use,
-                                                                     proportion_rate)
+                                                                     device_to_use, proportion_rate)
     bridge_movement_supplier: GAMovementsSupplier = BridgeMovementSupplier(ga_params)
 
     genetic_algorithm: OptimizationAlgorithm = GeneticAlgorithm(ga_params, bridge_movement_supplier, bridge_obj_function)
