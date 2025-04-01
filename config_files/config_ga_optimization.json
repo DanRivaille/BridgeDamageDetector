@@ -11,9 +11,9 @@
   },
   "ga_params": {
     "population_size": 20,
-    "n_generations": 20,
-    "p_mutate": 0.01,
-    "p_cross": 0.9,
+    "n_generations": 200,
+    "p_mutate": 0.05,
+    "p_cross": 0.95,
     "proportion_rate": 0.9,
     "to_mask": "decoder"
   },

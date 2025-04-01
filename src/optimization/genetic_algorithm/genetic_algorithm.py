@@ -34,14 +34,14 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     population_with_fitness = list(zip(fitness, population))
 
     for i in range(self.__ga_params.n_generations):
-      if i % 5 == 0:
+      if i % 25 == 0:
         logging.warning(f'Generation: {i} - Current best: {best_fitness}')
 
       new_population = []
       new_fitness = []
-      parents = self.__movements_supplier.select(population_with_fitness)
 
       while len(new_population) < self.__ga_params.population_size:
+        parents = self.__movements_supplier.select(population_with_fitness)
         offspring_1, offspring_2 = self.__movements_supplier.crossing(parents[0], parents[1])
 
         successor_1 = self.__movements_supplier.mutate(offspring_1)

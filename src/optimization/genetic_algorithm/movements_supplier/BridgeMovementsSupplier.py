@@ -7,6 +7,8 @@ import torch
 class BridgeMovementSupplier(GAMovementsSupplier):
   def __init__(self, ga_params: GAParameters):
     super().__init__(ga_params)
+    self.__FITNESS_INDEX = 0
+    self.__INDIVIDUAL_INDEX = 1
 
   def create_individual(self):
     return torch.bernoulli(torch.full((self.ga_params.n_genes,), self.ga_params.proportion_rate)).int()
@@ -19,16 +21,16 @@ class BridgeMovementSupplier(GAMovementsSupplier):
     random.shuffle(population)
 
     # Tournament between first and second
-    if population[0][0] > population[1][0]:
-      parents.append(population[0][1])
+    if population[0][self.__FITNESS_INDEX] > population[1][self.__FITNESS_INDEX]:
+      parents.append(population[0][self.__INDIVIDUAL_INDEX])
     else:
-      parents.append(population[1][1])
+      parents.append(population[1][self.__INDIVIDUAL_INDEX])
 
     # Tournament between third and fourth
-    if population[2][0] > population[3][0]:
-      parents.append(population[2][1])
+    if population[2][self.__FITNESS_INDEX] > population[3][self.__FITNESS_INDEX]:
+      parents.append(population[2][self.__INDIVIDUAL_INDEX])
     else:
-      parents.append(population[3][1])
+      parents.append(population[3][self.__INDIVIDUAL_INDEX])
 
     return parents
 
