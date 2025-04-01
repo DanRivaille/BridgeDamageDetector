@@ -19,10 +19,10 @@ knp = True
 
 
 if(knp):
-    knapsack_parameters: Instances = KnapsackInstance("test/KNPInstances/P07.txt")
+    knapsack_parameters: KnapsackInstance = KnapsackInstance("test/KNPInstances/P07.txt")
     
     n_genes = knapsack_parameters.num_items
-    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generation, p_cross, p_mutate)
+    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generation, p_mutate, p_cross, 1)
     knp_obj_function: ObjectiveFunction = KNPObjectiveFunction(False, knapsack_parameters.capacity, knapsack_parameters.weights, knapsack_parameters.values)
     knp_movement_supplier: GAMovementsSupplier = KNPGAMovementSupplier(ga_params)
 
@@ -31,10 +31,10 @@ if(knp):
     best_solution, best_fitness = genetic_algorithm.run()
     print(f"Solution = {best_solution} | Fitness = {best_fitness}")
 else:
-    tsp_parameters: Instances = TSPInstance("test/TSPInstances/In1.txt")
+    tsp_parameters: TSPInstance = TSPInstance("test/TSPInstances/In1.txt")
 
     n_genes = tsp_parameters.tour_size
-    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generation, p_cross, p_mutate)
+    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generation, p_mutate, p_cross, 1)
     tsp_obj_function: ObjectiveFunction = TSPObjectiveFunction(True, tsp_parameters.matrix)
     tsp_movement_supplier: GAMovementsSupplier = TSPGAMovementSupplier(ga_params, 3)
 
