@@ -11,34 +11,26 @@
   },
   "ga_params": {
     "population_size": 20,
-    "n_generations": 200,
+    "n_generations": 20,
     "p_mutate": 0.01,
     "p_cross": 0.9,
     "proportion_rate": 0.9,
-    "to_mask": "first"
+    "to_mask": "decoder"
   },
   "mask_n_genes": {
-    "first": 32,
-    "bottleneck": 16,
-    "decoder": 32
+    "first": 256,
+    "bottleneck": 128,
+    "decoder": 256
   },
   "data_params": {
     "sensor_number": 0,
     "train_data" : {
       "first_date": "01/03/1998",
-      "last_date": "30/03/1998"
+      "last_date": "01/03/1998"
     },
     "validation_train_data": {
       "first_date": "01/02/1998",
-      "last_date": "07/02/1998"
-    },
-    "validation_test_data": {
-      "first_date": "10/04/1998",
-      "last_date": "24/04/1998"
-    },
-    "test_data": {
-      "first_date": "10/08/1998",
-      "last_date": "25/08/1998"
+      "last_date": "01/02/1998"
     }
   }
 }

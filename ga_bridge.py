@@ -1,7 +1,10 @@
 import os
 import time
+import logging
+
 from torch.utils.data import DataLoader
-from torch import save
+
+import torch
 from torch import load
 from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
 from src.optimization.genetic_algorithm.movements_supplier.GeneticAlgorithmMovementsSupplier import GAMovementsSupplier
@@ -14,7 +17,7 @@ from src.damage_detector.ParserArguments import ParserArguments
 from src.models.AutoencoderGA import Autoencoder
 from src.models.CustomDataset import CustomDataset
 from src.damage_detector.utils import __get_device, build_model_folder_path, load_data
-from src.optimization.objective_function.BridgeObjectiveFunction import BridgeObjectiveFunction
+from src.optimization.objective_function.BridgeObjectiveFunction import BridgeObjectiveFunction, evaluate_model
 from src.optimization.genetic_algorithm.movements_supplier.BridgeMovementsSupplier import BridgeMovementSupplier
 
 if __name__ == '__main__':
@@ -38,13 +41,11 @@ if __name__ == '__main__':
     p_cross = config_params.get_params('ga_params')['p_cross']
     proportion_rate = config_params.get_params('ga_params')['proportion_rate']
 
-    train_set = CustomDataset(train_data)
-    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=False)
-
     validation_set = CustomDataset(validation_data)
     validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=False)
 
-    model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
+    #model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
+    model_folder = build_model_folder_path(args.model_id, 'full_config_ae', args.folder_name)
     model_path = os.path.join(model_folder, 'model_trained.pth')
 
     model = Autoencoder(sequences_length, to_mask)
@@ -54,22 +55,23 @@ if __name__ == '__main__':
 
     # Entrenar modelo.
     ga_params: GAParameters = GAParameters(population_size, n_genes, n_generations, p_mutate, p_cross, proportion_rate)
-    bridge_obj_function: ObjectiveFunction = BridgeObjectiveFunction(True, model, train_loader, validation_loader,
+    bridge_obj_function: ObjectiveFunction = BridgeObjectiveFunction(True, model, validation_loader,
                                                                      device_to_use, proportion_rate)
     bridge_movement_supplier: GAMovementsSupplier = BridgeMovementSupplier(ga_params)
 
     genetic_algorithm: OptimizationAlgorithm = GeneticAlgorithm(ga_params, bridge_movement_supplier, bridge_obj_function)
+
+    # Base fitness
+    base_model_fitness = evaluate_model(model, validation_loader, device_to_use)
+    logging.warning(f'Base model fitness: {base_model_fitness}')
+
     start_time = time.time()
     best_solution, best_fitness = genetic_algorithm.run()
     print(f"Tiempo de ejecucion = {time.time() - start_time}")
-    print(f"Solution = {best_solution} | Fitness = {best_fitness}")
+    print(f"Best Fitness = {best_fitness}")
 
     if args.save:
         # Save the results
-        model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
-        os.makedirs(model_folder, exist_ok=True)
-
-        model_path = os.path.join(model_folder, 'model_trained.pth')
-        save(model.state_dict(), model_path)
+        pass
 
         

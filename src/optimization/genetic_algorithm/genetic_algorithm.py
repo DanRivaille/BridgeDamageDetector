@@ -34,7 +34,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     population_with_fitness = list(zip(fitness, population))
 
     for i in range(self.__ga_params.n_generations):
-      if i % 25 == 0:
+      if i % 5 == 0:
         logging.warning(f'Generation: {i} - Current best: {best_fitness}')
 
       new_population = []
