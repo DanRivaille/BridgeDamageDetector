@@ -1,28 +1,29 @@
 {
   "id": "full_config_ae",
   "global_variables": {
-    "sequences_length": 1000
+    "sequences_length": 512
   },
   "train_params": {
     "sequences_length": "sequences_length",
     "batch_size": 64,
     "learning_rate": 1e-3,
-    "num_epochs": 50
+    "num_epochs": 30
   },
   "ga_params": {
     "population_size": 20,
-    "n_generations": 200,
+    "n_generations": 300,
     "p_mutate": 0.05,
+    "p_cross": 0.9,
     "proportion_rate": 0.9,
-    "to_mask": "first"
+    "to_mask": "decoder"
   },
   "mask_n_genes": {
-    "first": 32,
-    "bottleneck": 16,
-    "decoder": 32
+    "first": 64,
+    "bottleneck": 32,
+    "decoder": 64
   },
   "test_params": {
-    "macroseq_length": 100,
+    "macroseq_length": 60,
     "min_feature_threshold": 1e-5,
     "max_feature_threshold": 1e-2,
     "number_feature_thresholds_to_try": 50,
@@ -33,23 +34,24 @@
   "data_params": {
     "sensor_number": 0,
     "train_data" : {
-      "first_date": "01/03/1998",
-      "last_date": "30/03/1998"
+      "first_date": "01/02/1998",
+      "last_date": "01/02/1998"
     },
     "validation_train_data": {
       "first_date": "01/02/1998",
-      "last_date": "07/02/1998"
+      "last_date": "01/02/1998"
     },
     "validation_test_data": {
-      "first_date": "10/04/1998",
-      "last_date": "24/04/1998"
+      "first_date": "22/03/1998",
+      "last_date": "10/04/1998"
     },
     "test_data": {
       "first_date": "10/08/1998",
       "last_date": "25/08/1998"
     }
   },
-  "network_params": {
+
+ "network_params": {
     "type_model": "keras_model",
     "optimizer": "adam",
     "loss_function": "mean_squared_error",
