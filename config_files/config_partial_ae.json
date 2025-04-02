@@ -1,7 +1,7 @@
 {
-  "id": "partial_config_ae",
+  "id": "full_config_ae",
   "global_variables": {
-    "sequences_length": 1000
+    "sequences_length": 512
   },
   "train_params": {
     "sequences_length": "sequences_length",
@@ -9,61 +9,44 @@
     "learning_rate": 1e-3,
     "num_epochs": 30
   },
+  "ga_params": {
+    "population_size": 20,
+    "n_generations": 500,
+    "p_mutate": 0.05,
+    "proportion_rate": 0.9,
+    "to_mask": "decoder"
+  },
+  "mask_n_genes": {
+    "first": 64,
+    "bottleneck": 32,
+    "decoder": 64
+  },
   "test_params": {
-    "macroseq_length": 60,
-    "min_feature_threshold": 1e-4,
+    "macroseq_length": 100,
+    "min_feature_threshold": 1e-5,
     "max_feature_threshold": 1e-2,
     "number_feature_thresholds_to_try": 50,
     "min_macroseq_threshold": 0.4,
-    "max_macroseq_threshold": 0.55,
-    "number_macroseq_thresholds_to_try": 10
+    "max_macroseq_threshold": 0.6,
+    "number_macroseq_thresholds_to_try": 20
   },
   "data_params": {
     "sensor_number": 0,
     "train_data" : {
-      "first_date": "01/02/1998",
-      "last_date": "01/02/1998"
-    },
-    "validation_train_data": {
       "first_date": "01/03/1998",
       "last_date": "07/03/1998"
     },
+    "validation_train_data": {
+      "first_date": "01/02/1998",
+      "last_date": "07/02/1998"
+    },
     "validation_test_data": {
-      "first_date": "22/03/1998",
-      "last_date": "10/04/1998"
+      "first_date": "10/04/1998",
+      "last_date": "24/04/1998"
     },
     "test_data": {
       "first_date": "10/08/1998",
       "last_date": "25/08/1998"
     }
-  },
-
- "network_params": {
-    "type_model": "keras_model",
-    "optimizer": "adam",
-    "loss_function": "mean_squared_error",
-    "topology": [
-      {
-        "layer": "dense_keras_layer",
-        "neurons": 256,
-        "input_shape": ["sequences_length"],
-        "activation": "tanh"
-      },
-      {
-        "layer": "dense_keras_layer",
-        "neurons": 128,
-        "activation": "tanh"
-      },
-      {
-        "layer": "dense_keras_layer",
-        "neurons": 256,
-        "activation": "tanh"
-      },
-      {
-        "layer": "dense_keras_layer",
-        "neurons": "sequences_length",
-        "activation": "sigmoid"
-      }
-    ]
   }
 }

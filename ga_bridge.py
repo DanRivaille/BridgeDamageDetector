@@ -69,6 +69,7 @@ if __name__ == '__main__':
     best_solution, best_fitness = genetic_algorithm.run()
     print(f"Tiempo de ejecucion = {time.time() - start_time}")
     print(f"Best Fitness = {best_fitness}")
+    print(best_solution)
 
     if args.save:
         # Save the results

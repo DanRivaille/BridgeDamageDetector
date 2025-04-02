@@ -7,15 +7,15 @@ class Autoencoder(nn.Module):
         self.layer_to_mask = layer_to_mask
         self.input_length = input_length
         self.encoder = nn.Sequential(
-            nn.Linear(input_length, 256),
+            nn.Linear(input_length, 64),
             nn.Tanh(),
-            nn.Linear(256, 128),
+            nn.Linear(64, 32),
             nn.Tanh(),
         )
         self.decoder = nn.Sequential(
-            nn.Linear(128, 256),
+            nn.Linear(32, 64),
             nn.Tanh(),
-            nn.Linear(256, input_length),
+            nn.Linear(64, input_length),
             nn.Tanh(),
         )
 

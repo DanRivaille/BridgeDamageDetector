@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     criterion = nn.MSELoss()
     optimizer = Adam(model.parameters(), lr=learning_rate)
-    scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.1, total_iters=30)
+    scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.1, total_iters=10)
 
     start_time = time.time()
 
@@ -63,7 +63,7 @@ if __name__ == '__main__':
             loss.backward()
             optimizer.step()
 
-        if epoch > 20:
+        if epoch > 30:
             scheduler.step()
 
         for validation_batch in validation_loader:
