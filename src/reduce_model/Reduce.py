@@ -35,8 +35,8 @@ def reconstruct_lineal_layer_input(current_layer: nn.Linear, active_indexes: tor
     
     new_layer.weight.data = current_layer.weight.data[:, active_indexes].clone()
     if current_layer.bias is not None:
-        new_layer.bias.data = current_layer.bias.data[active_indexes].clone()
-        # new_layer.bias.data = current_layer.bias.data.clone()
+        #new_layer.bias.data = current_layer.bias.data[active_indexes].clone()
+        new_layer.bias.data = current_layer.bias.data.clone()
         
     return new_layer
 
@@ -95,7 +95,7 @@ def main():
         os.makedirs(pruned_model_folder, exist_ok=True)
 
         print("Saving the reimplementation of the model")
-        model_path = os.path.join(pruned_model_folder, 'model_reduced.pth')
+        model_path = os.path.join(pruned_model_folder, 'model_trained.pth')
         save(model.state_dict(), model_path)
 
         model_dimension_path = os.path.join(pruned_model_folder, 'model_dimensions.json')
