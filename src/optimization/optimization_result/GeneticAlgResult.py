@@ -1,3 +1,5 @@
+from torch import Tensor
+
 from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
 from src.optimization.optimization_result.OptimizationResult import OptimizationResult
 
@@ -9,7 +11,7 @@ class GeneticAlgorithmResult(OptimizationResult):
                l1_fitness: float,
                l2_fitness: float,
                total_time: float,
-               best_individual: list,
+               best_individual: Tensor,
                ga_params: GAParameters
                ):
     self.__base_fitness = base_fitness
@@ -27,7 +29,7 @@ class GeneticAlgorithmResult(OptimizationResult):
       'l1_fitness': self.__l1_fitness,
       'l2_fitness': self.__l2_fitness,
       'total_time': self.__total_time,
-      'best_individual': self.__best_individual,
+      'best_individual': self.__best_individual.tolist(),
       'ga_params': {
         'population_size': self.__ga_params.population_size,
         'n_genes': self.__ga_params.n_genes,

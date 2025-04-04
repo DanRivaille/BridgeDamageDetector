@@ -21,6 +21,8 @@ from src.models.CustomDataset import CustomDataset
 from src.damage_detector.utils import __get_device, build_model_folder_path, load_data
 from src.optimization.objective_function.BridgeObjectiveFunction import BridgeObjectiveFunction, evaluate_model
 from src.optimization.genetic_algorithm.movements_supplier.BridgeMovementsSupplier import BridgeMovementSupplier
+from src.optimization.optimization_result.GeneticAlgResult import GeneticAlgorithmResult
+from src.optimization.optimization_result.OptimizationResult import OptimizationResult
 
 if __name__ == '__main__':
   args = ParserArguments()
@@ -99,4 +101,18 @@ if __name__ == '__main__':
 
   if args.save:
     # Save the results
-    pass
+    optimization_results: OptimizationResult = GeneticAlgorithmResult(
+      base_model_fitness,
+      best_fitness,
+      mean_loss_l1,
+      mean_loss_l2,
+      total_time,
+      best_solution,
+      ga_params
+    )
+
+    model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
+    os.makedirs(model_folder, exist_ok=True)
+
+    results_path = os.path.join(model_folder, 'optimization_results.json')
+    optimization_results.save(results_path)
