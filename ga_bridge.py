@@ -29,34 +29,44 @@ if __name__ == '__main__':
 
   config_params = ConfigParams.load(os.path.join(CommonPath.CONFIG_FILES_FOLDER.value, args.config_filename))
   sequences_length = config_params.get_params('global_variables').get('sequences_length')
-
-  train_data, validation_data = load_data(config_params, is_train=True)
+  batch_size = config_params.get_params('train_params')['batch_size']
+  to_mask = config_params.get_params('ga_params')['to_mask']
 
   device_to_use = __get_device()
   print(device_to_use)
 
-  batch_size = config_params.get_params('train_params')['batch_size']
-  to_mask = config_params.get_params('ga_params')['to_mask']
+  # Load the model
+  model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
+  model_path = os.path.join(model_folder, 'model_trained.pth')
 
-  n_genes = config_params.get_params('mask_n_genes')[to_mask]
+  encoder_size, bottleneck_size = list(map(lambda x: int(x), args.model_id.split('_')[1].split('x')))
+  decoder_size = encoder_size
+
+  model = Autoencoder(sequences_length, to_mask, encoder_size, bottleneck_size, decoder_size)
+  model.load_state_dict(load(model_path))
+  model.eval()
+  model.to(device_to_use)
+
+  # Load the data
+  train_data, validation_data = load_data(config_params, is_train=True)
+
+  validation_set = CustomDataset(validation_data)
+  validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=False)
+
+  # Training the model
+  mask_n_genes = {
+    "first": encoder_size,
+    "bottleneck": bottleneck_size,
+    "decoder": decoder_size
+  }
+
+  n_genes = mask_n_genes[to_mask]
   population_size = config_params.get_params('ga_params')['population_size']
   n_generations = config_params.get_params('ga_params')['n_generations']
   p_mutate = config_params.get_params('ga_params')['p_mutate']
   p_cross = config_params.get_params('ga_params')['p_cross']
   proportion_rate = config_params.get_params('ga_params')['proportion_rate']
 
-  validation_set = CustomDataset(validation_data)
-  validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=False)
-
-  model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
-  model_path = os.path.join(model_folder, 'model_trained.pth')
-
-  model = Autoencoder(sequences_length, to_mask)
-  model.load_state_dict(load(model_path))
-  model.eval()
-  model.to(device_to_use)
-
-  # Entrenar modelo.
   ga_params: GAParameters = GAParameters(population_size, n_genes, n_generations, p_mutate, p_cross, proportion_rate)
   bridge_obj_function: ObjectiveFunction = BridgeObjectiveFunction(True, model, validation_loader,
                                                                    device_to_use, proportion_rate)

@@ -17,11 +17,6 @@
     "proportion_rate": 0.9,
     "to_mask": "decoder"
   },
-  "mask_n_genes": {
-    "first": 64,
-    "bottleneck": 32,
-    "decoder": 64
-  },
   "test_params": {
     "macroseq_length": 60,
     "min_feature_threshold": 1e-5,
@@ -49,34 +44,5 @@
       "first_date": "10/08/1998",
       "last_date": "25/08/1998"
     }
-  },
-
- "network_params": {
-    "type_model": "keras_model",
-    "optimizer": "adam",
-    "loss_function": "mean_squared_error",
-    "topology": [
-      {
-        "layer": "dense_keras_layer",
-        "neurons": 256,
-        "input_shape": ["sequences_length"],
-        "activation": "tanh"
-      },
-      {
-        "layer": "dense_keras_layer",
-        "neurons": 128,
-        "activation": "tanh"
-      },
-      {
-        "layer": "dense_keras_layer",
-        "neurons": 256,
-        "activation": "tanh"
-      },
-      {
-        "layer": "dense_keras_layer",
-        "neurons": "sequences_length",
-        "activation": "sigmoid"
-      }
-    ]
   }
 }
