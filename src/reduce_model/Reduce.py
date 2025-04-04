@@ -1,7 +1,7 @@
-import torch
 import os
-import time
+import json
 
+import torch
 from torch import load
 from torch import nn
 from torch import save
@@ -9,99 +9,104 @@ from torch import save
 from src.damage_detector.CommonPath import CommonPath
 from src.damage_detector.ConfigParams import ConfigParams
 from src.damage_detector.ParserArguments import ParserArguments
-from src.models.Autoencoder import Autoencoder
-from src.damage_detector.utils import __get_device, build_model_folder_path, load_data
+from src.models.AutoencoderGA import Autoencoder
+from src.damage_detector.utils import __get_device, build_model_folder_path
 
 
-def rearmar_capa_lineal(capa: nn.Linear, mascara: torch.Tensor):
+def reconstruct_lineal_layer(current_layer: nn.Linear, mascara: torch.Tensor):
 
-    assert mascara.numel() == capa.out_features, "La máscara debe tener una longitud igual al número de neuronas de salida."
+    assert mascara.numel() == current_layer.out_features, "La máscara debe tener una longitud igual al número de neuronas de salida."
 
-    indices_activos = torch.nonzero(mascara).squeeze()
-    nuevo_num_neuronas = indices_activos.numel()
-    print(indices_activos)
+    active_indexes = torch.nonzero(mascara).squeeze()
+    new_dimension = active_indexes.numel()
     
-    nueva_capa = nn.Linear(capa.in_features, nuevo_num_neuronas, bias=(capa.bias is not None))
+    reconstructed_layer = nn.Linear(current_layer.in_features, new_dimension, bias=(current_layer.bias is not None))
     
-    nueva_capa.weight.data = capa.weight.data[indices_activos, :].clone()
-    if capa.bias is not None:
-        nueva_capa.bias.data = capa.bias.data[indices_activos].clone()
+    reconstructed_layer.weight.data = current_layer.weight.data[active_indexes, :].clone()
+    if current_layer.bias is not None:
+        reconstructed_layer.bias.data = current_layer.bias.data[active_indexes].clone()
         
-    return nueva_capa, indices_activos
+    return reconstructed_layer, active_indexes
 
-def rearmar_capa_lineal_input(capa: nn.Linear, indices_activos: torch.Tensor):
-    nuevo_num_entradas = indices_activos.numel()
-    nueva_capa = nn.Linear(nuevo_num_entradas, capa.out_features, bias=(capa.bias is not None))
+
+def reconstruct_lineal_layer_input(current_layer: nn.Linear, active_indexes: torch.Tensor):
+    new_dimension = active_indexes.numel()
+    new_layer = nn.Linear(new_dimension, current_layer.out_features, bias=(current_layer.bias is not None))
     
-    nueva_capa.weight.data = capa.weight.data[:, indices_activos].clone()
-    print(capa.weight.data)
-    if capa.bias is not None:
-        nueva_capa.bias.data = capa.bias.data.clone()
+    new_layer.weight.data = current_layer.weight.data[:, active_indexes].clone()
+    if current_layer.bias is not None:
+        new_layer.bias.data = current_layer.bias.data[active_indexes].clone()
+        # new_layer.bias.data = current_layer.bias.data.clone()
         
-    return nueva_capa
+    return new_layer
 
 
-if __name__ == '__main__':
+def reimplement_layer(prev_layer: nn.Linear, next_layer: nn.Linear, mask: torch.Tensor) -> tuple:
+    new_prev_layer, active_indexes = reconstruct_lineal_layer(prev_layer, mask)
+    new_next_layer = reconstruct_lineal_layer_input(next_layer, active_indexes)
+    return new_prev_layer, new_next_layer
+
+
+def reimplement_model(model: Autoencoder, layer_to_mask: str, mask: torch.Tensor):
+    if layer_to_mask == 'first':
+        model.encoder[0], model.encoder[2] = reimplement_layer(model.encoder[0], model.encoder[2], mask)
+    elif layer_to_mask == 'bottleneck':
+        model.encoder[2], model.decoder[0] = reimplement_layer(model.encoder[2], model.decoder[0], mask)
+    elif layer_to_mask == 'decoder':
+        model.decoder[0], model.decoder[2] = reimplement_layer(model.decoder[0], model.decoder[2], mask)
+
+
+def main():
     args = ParserArguments()
 
     config_params = ConfigParams.load(os.path.join(CommonPath.CONFIG_FILES_FOLDER.value, args.config_filename))
 
     sequences_length = config_params.get_params('global_variables').get('sequences_length')
     device_to_use = __get_device()
+    layer_to_mask = config_params.get_params('ga_params')['to_mask']
 
-    model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
-    model_path = os.path.join(model_folder, 'model_trained.pth')
+    # Load the base model
+    base_model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), 'base_models')
+    model_path = os.path.join(base_model_folder, 'model_trained.pth')
 
-    model = Autoencoder(sequences_length)
+    encoder_size, bottleneck_size = list(map(lambda x: int(x), args.model_id.split('_')[1].split('x')))
+    decoder_size = encoder_size
+
+    model = Autoencoder(sequences_length, layer_to_mask, encoder_size, bottleneck_size, decoder_size)
     model.load_state_dict(load(model_path))
     model.eval()
     model.to(device_to_use)
 
+    # Load the best mask
+    result_file_path = os.path.join(base_model_folder, 'optimization_results.json')
+    assert os.path.isfile(result_file_path), "Optimization results file doesn't exists!"
 
-    criterion = nn.MSELoss()
-    validation_error = []
+    with open(result_file_path, 'r') as results_file:
+        results = json.load(results_file)
 
-    start_time = time.time()
+    mask = torch.tensor(results['best_individual']).to(device_to_use)
 
-    mask = torch.tensor([1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1]).to(device_to_use)
+    # Reimplement the model using the mask
+    reimplement_model(model, layer_to_mask, mask)
 
-    capa = 'Encoder'
-    
-    if capa =='Encoder':
-        new_layer, indices_activos = rearmar_capa_lineal(model.encoder[0], mask)
-        model.encoder[0] = new_layer
-        print("Después de modificar encoder[0]:")
-        print("  encoder[0].out_features =", model.encoder[0].out_features)  
-
-
-        new_layer = rearmar_capa_lineal_input(model.encoder[2], indices_activos)
-        model.encoder[2] = new_layer
-        print("Nueva dimensión de entrada para encoder[2]:", model.encoder[2].in_features)
-    elif capa == 'Bottleneck':
-        new_encoder2, indices_activos_enc2 = rearmar_capa_lineal(model.encoder[2], mask)
-        model.encoder[2] = new_encoder2
-        print("Después de modificar encoder[2]:")
-        print("  encoder[2].out_features =", model.encoder[2].out_features)  
-
-        new_decoder0 = rearmar_capa_lineal_input(model.decoder[0], indices_activos_enc2)
-        model.decoder[0] = new_decoder0
-        print("Nueva dimensión de entrada para decoder[0]:", model.decoder[0].in_features)
-    else:
-        new_layer, indices_activos = rearmar_capa_lineal(model.decoder[0], mask)
-        model.decoder[0] = new_layer
-        print("Después de modificar decoder[0]:")
-        print("  decoder[0].out_features =", model.decoder[0].out_features)  
-
-        new_layer = rearmar_capa_lineal_input(model.decoder[2], indices_activos)
-        model.decoder[2] = new_layer
-        print("Nueva dimensión de entrada para decoder[2]:", model.decoder[2].in_features)
-
-
-    print(model)
-
+    # Save the reimplemented model
     if args.save:
-        model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
-        os.makedirs(model_folder, exist_ok=True)
+        pruned_model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), 'pruned_models')
+        os.makedirs(pruned_model_folder, exist_ok=True)
 
-        model_path = os.path.join(model_folder, 'model_reduced.pth')
+        print("Saving the reimplementation of the model")
+        model_path = os.path.join(pruned_model_folder, 'model_reduced.pth')
         save(model.state_dict(), model_path)
+
+        model_dimension_path = os.path.join(pruned_model_folder, 'model_dimensions.json')
+        model_dimension = {
+            "first": model.encoder[0].out_features,
+            "bottleneck": model.encoder[2].out_features,
+            "decoder": model.decoder[0].out_features
+        }
+        with open(model_dimension_path, 'w') as model_dimension_file:
+            json.dump(model_dimension, model_dimension_file)
+
+
+if __name__ == '__main__':
+    main()
