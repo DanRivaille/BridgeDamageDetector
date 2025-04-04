@@ -66,18 +66,17 @@ if __name__ == '__main__':
   base_model_fitness = evaluate_model(model, validation_loader, device_to_use)
   logging.warning(f'Base model fitness: {base_model_fitness}')
 
+  # Clasical pruning techniques fitness
   pruned_model_l1 = copy.deepcopy(model).to(device_to_use)
   pruned_model_l2 = copy.deepcopy(model).to(device_to_use)
 
-  # Prune estructurado eliminando filas (neuronas de salida)
   prune.ln_structured(
-    module=pruned_model_l1.decoder[0],  # Primera capa
+    module=pruned_model_l1.decoder[0],
     name='weight',
-    amount=1 - proportion_rate,  # Proporción de filas (neuronas) a eliminar
-    n=1,  # Usamos norma L1 para determinar importancia
-    dim=0)  # Filas: Desactiva neuronas completas
+    amount=1 - proportion_rate,
+    n=1,
+    dim=0)
 
-  # Prune estructurado eliminando filas (neuronas de salida)
   prune.ln_structured(
     module=pruned_model_l2.decoder[0],
     name='weight',
@@ -90,9 +89,11 @@ if __name__ == '__main__':
   print(f"Best validation loss (L1) {mean_loss_l1}")
   print(f"Best validation loss (L2) {mean_loss_l2}")
 
+  # GA fitness
   start_time = time.time()
   best_solution, best_fitness = genetic_algorithm.run()
-  print(f"Tiempo de ejecucion = {time.time() - start_time}")
+  total_time = time.time() - start_time
+  print(f"Tiempo de ejecucion = {total_time}")
   print(f"Best Fitness = {best_fitness}")
   print(best_solution)
 
