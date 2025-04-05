@@ -4,15 +4,9 @@
     "sequences_length": 512
   },
   "train_params": {
-    "batch_size": 64
-  },
-  "ga_params": {
-    "population_size": 20,
-    "n_generations": 30,
-    "p_mutate": 0.05,
-    "p_cross": 0.9,
-    "proportion_rate": 0.9,
-    "to_mask": "decoder"
+    "batch_size": 64,
+    "learning_rate": 1e-3,
+    "num_epochs": 30
   },
   "data_params": {
     "sensor_number": 0,

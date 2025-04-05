@@ -33,6 +33,7 @@ if __name__ == '__main__':
     num_epochs = config_params.get_params('train_params')['num_epochs']
     batch_size = config_params.get_params('train_params')['batch_size']
     learning_rate = config_params.get_params('train_params')['learning_rate']
+    learning_rate_start_epoch_updating = config_params.get_params('train_params')['start_epoch_updating_lr']
 
     train_set = CustomDataset(train_data)
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=False)
@@ -45,7 +46,8 @@ if __name__ == '__main__':
 
     criterion = nn.MSELoss()
     optimizer = Adam(model.parameters(), lr=learning_rate)
-    scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.1, total_iters=10)
+    scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.1,
+                                      total_iters=num_epochs - learning_rate_start_epoch_updating)
 
     start_time = time.time()
 
@@ -63,7 +65,7 @@ if __name__ == '__main__':
             loss.backward()
             optimizer.step()
 
-        if epoch > 30:
+        if epoch >= learning_rate_start_epoch_updating:
             scheduler.step()
 
         for validation_batch in validation_loader:
