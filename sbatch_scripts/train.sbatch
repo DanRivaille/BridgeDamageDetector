@@ -8,30 +8,30 @@
 #SBATCH --time=10:00:00
 #SBATCH --partition GPU
 
-ROOT_PROJECT_FOLDER=/home/ivan.santos/repositories/AE-Z24
+ROOT_PROJECT_FOLDER=/home/ivan.santos/repositories/BridgeDamageDetector
 SOURCE_FOLDER=$ROOT_PROJECT_FOLDER/src
 
-MODEL_ID=AE512_256x128
-CONFIG_FOLDER=config_files/montlhy/
+MODEL_ID=AE512_64x32
+CONFIG_TYPE=weekly
 
 source $HOME/miniconda3/etc/profile.d/conda.sh
-conda activate AE-Z24
+conda activate AE-GA
 
 # Train the base model
-python3 $ROOT_PROJECT_FOLDER/train.py --id $MODEL_ID --config $CONFIG_FOLDER/config_train_base_model.json --output-folder base_models --save
+python3 $ROOT_PROJECT_FOLDER/train.py --id $MODEL_ID --config config_train_base_model-$CONFIG_TYPE.json --output-folder base_models --save
 
 # Run the optimization technique to find the best mask
-python3 $ROOT_PROJECT_FOLDER/ga_bridge.py --id $MODEL_ID --config $CONFIG_FOLDER/config_ga_optimization.json --output-folder base_models --save
+python3 $ROOT_PROJECT_FOLDER/ga_bridge.py --id $MODEL_ID --config config_ga_optimization-$CONFIG_TYPE.json --output-folder base_models --save
 
 # Reimplement the model using the mask
-python3 $SOURCE_FOLDER/reduce_model/Reduce.py --id $MODEL_ID --config $CONFIG_FOLDER/config_reduce_model.json --output-folder base_models --save
+python3 $SOURCE_FOLDER/reduce_model/Reduce.py --id $MODEL_ID --config config_reduce_model-$CONFIG_TYPE.json --output-folder base_models --save
 
 # Fine-tuning the reimplemented model
-python3 $SOURCE_FOLDER/reduce_model/Finetuning.py --id $MODEL_ID --config $CONFIG_FOLDER/config_fune-tuning_model.json --save
+python3 $SOURCE_FOLDER/reduce_model/Finetuning.py --id $MODEL_ID --config config_fune-tuning_model-$CONFIG_TYPE.json --save
 
 # Get the metrics of three models (base, reimplemented and fine-tuned)
-python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config $CONFIG_FOLDER/config_compute_metrics.json --output-folder base_models --save
-python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config $CONFIG_FOLDER/config_compute_metrics.json --output-folder pruned_models --save
-python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config $CONFIG_FOLDER/config_compute_metrics.json --output-folder fine-tuned_models --save
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder base_models --save
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder pruned_models --save
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder fine-tuned_models --save
 
 conda deactivate
