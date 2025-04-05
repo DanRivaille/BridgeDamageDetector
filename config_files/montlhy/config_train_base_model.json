@@ -7,8 +7,8 @@
     "sequences_length": "sequences_length",
     "batch_size": 64,
     "learning_rate": 1e-3,
-    "num_epochs": 30,
-    "start_epoch_updating_lr": 12
+    "num_epochs": 50,
+    "start_epoch_updating_lr": 20
   },
   "data_params": {
     "sensor_number": 0,
