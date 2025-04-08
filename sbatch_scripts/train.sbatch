@@ -5,12 +5,12 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=4096
-#SBATCH --time=10:00:00
 #SBATCH --partition GPU
+#SBATCH --qos=normal-gpu
 
 ROOT_PROJECT_FOLDER=/home/ivan.santos/repositories/BridgeDamageDetector
 
-MODEL_ID=AE512_64x32
+MODEL_ID=AE512_256x128
 CONFIG_TYPE=weekly
 
 source $HOME/miniconda3/etc/profile.d/conda.sh

@@ -11,7 +11,7 @@ from src.damage_detector.History import History
 from src.damage_detector.CommonPath import CommonPath
 from src.damage_detector.ConfigParams import ConfigParams
 from src.damage_detector.ParserArguments import ParserArguments
-from src.models.Autoencoder import Autoencoder
+from src.models.AutoencoderGA import Autoencoder
 from src.models.CustomDataset import CustomDataset
 from src.damage_detector.utils import __get_device, build_model_folder_path, load_data
 
@@ -21,19 +21,14 @@ if __name__ == '__main__':
 
     # Load configs
     config_params = ConfigParams.load(os.path.join(CommonPath.CONFIG_FILES_FOLDER.value, args.config_filename))
-
-    sequences_length = config_params.get_params('global_variables').get('sequences_length')
-
-    # Load data
-    train_data, validation_data = load_data(config_params, is_train=True)
-
-    device_to_use = __get_device()
-
-    # Create the model
     num_epochs = config_params.get_params('train_params')['num_epochs']
     batch_size = config_params.get_params('train_params')['batch_size']
     learning_rate = config_params.get_params('train_params')['learning_rate']
     learning_rate_start_epoch_updating = config_params.get_params('train_params')['start_epoch_updating_lr']
+    sequences_length = config_params.get_params('global_variables').get('sequences_length')
+
+    # Load data
+    train_data, validation_data = load_data(config_params, is_train=True)
 
     train_set = CustomDataset(train_data)
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=False)
@@ -41,7 +36,13 @@ if __name__ == '__main__':
     validation_set = CustomDataset(validation_data)
     validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=False)
 
-    model = Autoencoder(sequences_length)
+    device_to_use = __get_device()
+
+    # Create the model
+    encoder_size, bottleneck_size = list(map(lambda x: int(x), args.model_id.split('_')[1].split('x')))
+    decoder_size = encoder_size
+
+    model = Autoencoder(sequences_length, "", encoder_size, bottleneck_size, decoder_size)
     model.to(device_to_use)
 
     criterion = nn.MSELoss()
