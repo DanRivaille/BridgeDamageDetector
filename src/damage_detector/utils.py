@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 from torch.cuda import is_available
+import joblib
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler
 
 from src.damage_detector.CommonPath import CommonPath
@@ -50,7 +51,6 @@ def build_model_folder_path(model_identifier: str, config_identifier: str, folde
 
 def load_data(config_params: ConfigParams, is_train=True) -> tuple:
   sequences_length = config_params.get_params('global_variables').get('sequences_length')
-  n_features = 1
 
   if is_train:
     dataset_type = DatasetType.TRAIN_DATA
@@ -68,8 +68,20 @@ def load_data(config_params: ConfigParams, is_train=True) -> tuple:
   print(f"Vali data shape (after the load): {validation_data.shape}")
 
   # Process the data
-  data = StandardScaler().fit_transform(data)
-  validation_data = StandardScaler().fit_transform(validation_data)
+  if is_train:
+    standardScaler = StandardScaler()
+    maxAbsScaler = MaxAbsScaler()
+    minMaxScaler = MinMaxScaler()
+  else:
+    standardScaler = joblib.load('/home/ivan.santos/repositories/BridgeDamageDetector/models_trained/standard_scaler.pkl')
+    maxAbsScaler = joblib.load('/home/ivan.santos/repositories/BridgeDamageDetector/models_trained/max_abs_scaler.pkl')
+    minMaxScaler = joblib.load('/home/ivan.santos/repositories/BridgeDamageDetector/models_trained/min_max_scaler.pkl')
+
+  if is_train:
+    standardScaler.fit(data)
+
+  data = standardScaler.transform(data)
+  validation_data = standardScaler.transform(validation_data)
 
   data = split_in_sequences(data, 1000)
   validation_data = split_in_sequences(validation_data, 1000)
@@ -77,11 +89,22 @@ def load_data(config_params: ConfigParams, is_train=True) -> tuple:
   print(f"{type_data_str} data shape (after the sequence splitting): {data.shape}")
   print(f"Vali data shape (after the sequence splitting): {validation_data.shape}")
 
-  data = MaxAbsScaler().fit_transform(data).T
-  validation_data = MaxAbsScaler().fit_transform(validation_data).T
+  if is_train:
+    maxAbsScaler.fit(data)
 
-  data = MinMaxScaler().fit_transform(data.T).T
-  validation_data = MinMaxScaler().fit_transform(validation_data.T).T
+  data = maxAbsScaler.transform(data).T
+  validation_data = maxAbsScaler.transform(validation_data).T
+
+  if is_train:
+    minMaxScaler.fit(data.T)
+
+  data = minMaxScaler.transform(data.T).T
+  validation_data = minMaxScaler.transform(validation_data.T).T
+
+  if is_train:
+    joblib.dump(standardScaler, '/home/ivan.santos/repositories/BridgeDamageDetector/models_trained/standard_scaler.pkl')
+    joblib.dump(maxAbsScaler, '/home/ivan.santos/repositories/BridgeDamageDetector/models_trained/max_abs_scaler.pkl')
+    joblib.dump(minMaxScaler, '/home/ivan.santos/repositories/BridgeDamageDetector/models_trained/min_max_scaler.pkl')
 
   print(f"{type_data_str} data shape (after the scaling): {data.shape}")
   print(f"Vali data shape (after the scaling): {validation_data.shape}")
