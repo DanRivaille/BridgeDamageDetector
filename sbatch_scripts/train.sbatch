@@ -10,17 +10,36 @@
 
 ROOT_PROJECT_FOLDER=/home/ivan.santos/repositories/BridgeDamageDetector
 
-MODEL_ID=AE512_256x128
-CONFIG_TYPE=weekly
-
 source $HOME/miniconda3/etc/profile.d/conda.sh
 conda activate AE-GA
+
+MODEL_ID=AE512_64x32
+CONFIG_TYPE=month
 
 # Train the base model
 python3 $ROOT_PROJECT_FOLDER/train.py --id $MODEL_ID --config config_train_base_model-$CONFIG_TYPE.json --output-folder base_models --save
 
 # Run the optimization technique to find the best mask
-python3 $ROOT_PROJECT_FOLDER/ga_bridge.py --id $MODEL_ID --config config_ga_optimization-$CONFIG_TYPE.json --output-folder base_models --save
+python3 $ROOT_PROJECT_FOLDER/ga_bridge.py --id $MODEL_ID --config config_ga_optimization-${CONFIG_TYPE}_90.json --output-folder base_models --save
+
+# Reimplement the model using the mask
+python3 $ROOT_PROJECT_FOLDER/Reduce.py --id $MODEL_ID --config config_reduce_model-$CONFIG_TYPE.json --output-folder base_models --save
+
+# Fine-tuning the reimplemented model
+python3 $ROOT_PROJECT_FOLDER/Finetuning.py --id $MODEL_ID --config config_fune-tuning_model-$CONFIG_TYPE.json --save
+
+# Get the metrics of three models (base, reimplemented and fine-tuned)
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder base_models --save
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder pruned_models --save
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder fine-tuned_models --save
+
+CONFIG_TYPE=weekly
+
+# Train the base model
+python3 $ROOT_PROJECT_FOLDER/train.py --id $MODEL_ID --config config_train_base_model-$CONFIG_TYPE.json --output-folder base_models --save
+
+# Run the optimization technique to find the best mask
+python3 $ROOT_PROJECT_FOLDER/ga_bridge.py --id $MODEL_ID --config config_ga_optimization-${CONFIG_TYPE}_90.json --output-folder base_models --save
 
 # Reimplement the model using the mask
 python3 $ROOT_PROJECT_FOLDER/Reduce.py --id $MODEL_ID --config config_reduce_model-$CONFIG_TYPE.json --output-folder base_models --save

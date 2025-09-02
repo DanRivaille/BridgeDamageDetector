@@ -5,9 +5,9 @@
   },
   "train_params": {
     "batch_size": 64,
-    "learning_rate": 1e-3,
-    "num_epochs": 20,
-    "start_epoch_updating_lr": 10
+    "learning_rate": 1e-4,
+    "num_epochs": 5,
+    "start_epoch_updating_lr": 3
   },
   "data_params": {
     "sensor_number": 0,

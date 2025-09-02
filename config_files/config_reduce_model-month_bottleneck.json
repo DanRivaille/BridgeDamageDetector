@@ -1,0 +1,9 @@
+{
+  "id": "month",
+  "global_variables": {
+    "sequences_length": 512
+  },
+  "ga_params": {
+    "to_mask": "bottleneck"
+  }
+}

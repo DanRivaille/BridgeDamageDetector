@@ -11,7 +11,7 @@
     "n_generations": 1200,
     "p_mutate": 0.05,
     "p_cross": 0.9,
-    "proportion_rate": 0.6,
+    "proportion_rate": 0.1,
     "to_mask": "decoder"
   },
   "data_params": {
