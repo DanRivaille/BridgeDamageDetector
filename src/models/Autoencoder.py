@@ -5,15 +5,15 @@ class Autoencoder(nn.Module):
     def __init__(self, input_length):
         super().__init__()
         self.encoder = nn.Sequential(
-            nn.Linear(input_length, 32),
+            nn.Linear(input_length, 64),
             nn.Tanh(),
-            nn.Linear(32, 16),  
+            nn.Linear(64, 32),
             nn.Tanh(),
         )
         self.decoder = nn.Sequential(
-            nn.Linear(16, 32),  
+            nn.Linear(32, 64),
             nn.Tanh(),
-            nn.Linear(32, input_length),
+            nn.Linear(64, input_length),
             nn.Tanh(),
         )
 

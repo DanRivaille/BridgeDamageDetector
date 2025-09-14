@@ -1,0 +1,23 @@
+{
+  "id": "month",
+  "global_variables": {
+    "sequences_length": 512
+  },
+  "train_params": {
+    "batch_size": 64,
+    "learning_rate": 1e-4,
+    "num_epochs": 5,
+    "start_epoch_updating_lr": 3
+  },
+  "data_params": {
+    "sensor_number": 0,
+    "train_data" : {
+      "first_date": "01/03/1998",
+      "last_date": "30/03/1998"
+    },
+    "validation_train_data": {
+      "first_date": "01/02/1998",
+      "last_date": "07/02/1998"
+    }
+  }
+}

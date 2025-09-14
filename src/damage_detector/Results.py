@@ -31,7 +31,7 @@ class Results:
         self.__confusion_matrix = confusion_matrix
         self.__execution_time = execution_time
 
-    def __get_json_dict(self) -> dict:
+    def to_json(self) -> dict:
         """
         Returns a dictionary for a .json file with the results.
         """
@@ -50,4 +50,4 @@ class Results:
         @param path The file path where the results will be saved.
         """
         with open(path, "w") as json_results_file:
-            dump(self.__get_json_dict(), json_results_file)
+            dump(self.to_json(), json_results_file)

@@ -1,0 +1,29 @@
+{
+  "id": "week",
+  "global_variables": {
+    "sequences_length": 512
+  },
+  "train_params": {
+    "batch_size": 64
+  },
+  "test_params": {
+    "macroseq_length": 60,
+    "min_feature_threshold": 1e-5,
+    "max_feature_threshold": 1e-2,
+    "number_feature_thresholds_to_try": 50,
+    "min_macroseq_threshold": 0.4,
+    "max_macroseq_threshold": 0.6,
+    "number_macroseq_thresholds_to_try": 20
+  },
+  "data_params": {
+    "sensor_number": 0,
+    "validation_test_data": {
+      "first_date": "01/06/1998",
+      "last_date": "28/06/1998"
+    },
+    "test_data": {
+      "first_date": "10/08/1998",
+      "last_date": "25/08/1998"
+    }
+  }
+}

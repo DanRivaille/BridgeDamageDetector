@@ -1,7 +1,12 @@
 import os
 import time
+import logging
+import copy
+
 from torch.utils.data import DataLoader
-from torch import save
+from torch.nn.utils import prune
+from torch.nn import Linear
+
 from torch import load
 from src.optimization.genetic_algorithm.GeneticAlgorithmParameters import GAParameters
 from src.optimization.genetic_algorithm.movements_supplier.GeneticAlgorithmMovementsSupplier import GAMovementsSupplier
@@ -14,72 +19,124 @@ from src.damage_detector.ParserArguments import ParserArguments
 from src.models.AutoencoderGA import Autoencoder
 from src.models.CustomDataset import CustomDataset
 from src.damage_detector.utils import __get_device, build_model_folder_path, load_data
-from src.optimization.objective_function.BridgeObjectiveFunction import BridgeObjectiveFunction
+from src.optimization.objective_function.BridgeObjectiveFunction import BridgeObjectiveFunction, evaluate_model
 from src.optimization.genetic_algorithm.movements_supplier.BridgeMovementsSupplier import BridgeMovementSupplier
+from src.optimization.optimization_result.GeneticAlgResult import GeneticAlgorithmResult
+from src.optimization.optimization_result.OptimizationResult import OptimizationResult
+
+
+def get_module_to_mask(model_base: Autoencoder, layer_to_mask: str) -> Linear:
+    if layer_to_mask == 'first':
+        return model_base.encoder[0]
+    elif layer_to_mask == 'bottleneck':
+        return model_base.encoder[2]
+    elif layer_to_mask == 'decoder':
+        return model_base.decoder[0]
+
 
 if __name__ == '__main__':
     args = ParserArguments()
 
     config_params = ConfigParams.load(os.path.join(CommonPath.CONFIG_FILES_FOLDER.value, args.config_filename))
     sequences_length = config_params.get_params('global_variables').get('sequences_length')
-
-    train_data, validation_data = load_data(config_params, is_train=True)
+    batch_size = config_params.get_params('train_params')['batch_size']
+    to_mask = config_params.get_params('ga_params')['to_mask']
 
     device_to_use = __get_device()
     print(device_to_use)
 
-    num_epochs = config_params.get_params('train_params')['num_epochs']
-    batch_size = config_params.get_params('train_params')['batch_size']
-    learning_rate = config_params.get_params('train_params')['learning_rate']
+    # Load the model
+    model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
+    model_path = os.path.join(model_folder, 'model_trained.pth')
 
-    to_mask = config_params.get_params('ga_params')['to_mask']
-    
-    n_genes = config_params.get_params('mask_n_genes')[to_mask]
+    encoder_size, bottleneck_size = list(map(lambda x: int(x), args.model_id.split('_')[1].split('x')))
+    decoder_size = encoder_size
 
-    population_size = config_params.get_params('ga_params')['population_size']
-    n_generations = config_params.get_params('ga_params')['n_generations']
-    p_mutate = config_params.get_params('ga_params')['p_mutate']
-    proportion_rate = config_params.get_params('ga_params')['proportion_rate']
+    model = Autoencoder(sequences_length, to_mask, encoder_size, bottleneck_size, decoder_size)
+    model.load_state_dict(load(model_path))
+    model.eval()
+    model.to(device_to_use)
 
-    train_set = CustomDataset(train_data)
-    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=False)
+    # Load the data
+    train_data, validation_data = load_data(config_params, is_train=True)
 
     validation_set = CustomDataset(validation_data)
     validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=False)
 
-    load_modelo = True
+    # Training the model
+    mask_n_genes = {
+        "first": encoder_size,
+        "bottleneck": bottleneck_size,
+        "decoder": decoder_size
+    }
 
-    if(load_modelo):
-        model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
-        model_path = os.path.join(model_folder, 'model_trained.pth')
+    n_genes = mask_n_genes[to_mask]
+    population_size = config_params.get_params('ga_params')['population_size']
+    n_generations = config_params.get_params('ga_params')['n_generations']
+    p_mutate = config_params.get_params('ga_params')['p_mutate']
+    p_cross = config_params.get_params('ga_params')['p_cross']
+    proportion_rate = config_params.get_params('ga_params')['proportion_rate']
 
-        model = Autoencoder(sequences_length, to_mask)
-        model.load_state_dict(load(model_path))
-        model.eval()
-        model.to(device_to_use)
-    else:
-        model = Autoencoder(sequences_length, to_mask)
-        model.to(device_to_use)
-
-    # Entrenar modelo.
-    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generations, p_mutate, proportion_rate)
-    bridge_obj_function: ObjectiveFunction = BridgeObjectiveFunction(True, model, train_loader, validation_loader,
-                                                                     learning_rate, num_epochs, device_to_use,
-                                                                     proportion_rate)
+    ga_params: GAParameters = GAParameters(population_size, n_genes, n_generations, p_mutate, p_cross, proportion_rate)
+    bridge_obj_function: ObjectiveFunction = BridgeObjectiveFunction(True, model, validation_loader,
+                                                                     device_to_use, proportion_rate)
     bridge_movement_supplier: GAMovementsSupplier = BridgeMovementSupplier(ga_params)
 
-    genetic_algorithm: OptimizationAlgorithm = GeneticAlgorithm(ga_params, bridge_movement_supplier, bridge_obj_function)
+    genetic_algorithm: OptimizationAlgorithm = GeneticAlgorithm(ga_params, bridge_movement_supplier,
+                                                                bridge_obj_function)
+
+    # Base fitness
+    base_model_fitness = evaluate_model(model, validation_loader, device_to_use)
+    logging.warning(f'Base model fitness: {base_model_fitness}')
+
+    # Clasical pruning techniques fitness
+    pruned_model_l1 = copy.deepcopy(model).to(device_to_use)
+    pruned_model_l2 = copy.deepcopy(model).to(device_to_use)
+
+    prune.ln_structured(
+        module=get_module_to_mask(pruned_model_l1, to_mask),
+        name='weight',
+        amount=1 - proportion_rate,
+        n=1,
+        dim=0)
+
+    prune.ln_structured(
+        module=get_module_to_mask(pruned_model_l2, to_mask),
+        name='weight',
+        amount=1 - proportion_rate,
+        n=2,
+        dim=0)
+
+    mean_loss_l1 = evaluate_model(pruned_model_l1, validation_loader, device_to_use)
+    mean_loss_l2 = evaluate_model(pruned_model_l2, validation_loader, device_to_use)
+    print(f"Best validation loss (L1) {mean_loss_l1}")
+    print(f"Best validation loss (L2) {mean_loss_l2}")
+
+    # GA fitness
     start_time = time.time()
     best_solution, best_fitness = genetic_algorithm.run()
-    print(f"Tiempo de ejecucion = {time.time() - start_time}")
-    print(f"Solution = {best_solution} | Fitness = {best_fitness}")
+
+    #best_fitness, best_solution = mean_loss_l2, get_module_to_mask(pruned_model_l2, to_mask).weight_mask.int().cpu().numpy()[:, 0]
+
+    total_time = time.time() - start_time
+    print(f"Tiempo de ejecucion = {total_time}")
+    print(f"Best Fitness = {best_fitness}")
+    print(best_solution)
 
     if args.save:
         # Save the results
+        optimization_results: OptimizationResult = GeneticAlgorithmResult(
+            base_model_fitness,
+            best_fitness,
+            mean_loss_l1,
+            mean_loss_l2,
+            total_time,
+            best_solution,
+            ga_params
+        )
+
         model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
         os.makedirs(model_folder, exist_ok=True)
 
-        model_path = os.path.join(model_folder, 'model_trained.pth')
-        save(model.state_dict(), model_path)
-
-        
+        results_path = os.path.join(model_folder, 'optimization_results.json')
+        optimization_results.save(results_path)

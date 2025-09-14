@@ -1,36 +1,55 @@
 #!/bin/bash
-#SBATCH --job-name=TrnTstML
+#SBATCH --job-name=RunFramework
 #SBATCH --output=/scratch/ivan.santos/test_models/output/train_and_test.out
 #SBATCH --error=/scratch/ivan.santos/test_models/error/train_and_test.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=4096
-#SBATCH --time=10:00:00
 #SBATCH --partition GPU
+#SBATCH --qos=normal-gpu
 
-ROOT_PROJECT_FOLDER=/home/ivan.santos/repositories/AE-Z24
-SOURCE_FOLDER=$ROOT_PROJECT_FOLDER/src
+ROOT_PROJECT_FOLDER=/home/ivan.santos/repositories/BridgeDamageDetector
 
 source $HOME/miniconda3/etc/profile.d/conda.sh
-conda activate AE-Z24
+conda activate AE-GA
 
-#python3 $ROOT_PROJECT_FOLDER/train.py --id example --config $ROOT_PROJECT_FOLDER/config_files/config_example.json --output-folder example-run --save
-#python3 $ROOT_PROJECT_FOLDER/test.py --id example --config $ROOT_PROJECT_FOLDER/config_files/config_example.json --output-folder example-run --save
+MODEL_ID=AE512_64x32
+CONFIG_TYPE=month
 
-# PARTIAL LSTM-AE (SEQUENCES)
-#python3 $ROOT_PROJECT_FOLDER/train.py --id sequence_test --config $ROOT_PROJECT_FOLDER/config_files/config_sequence_$SLURM_ARRAY_TASK_ID.json --output-folder sequences --save
-#python3 $ROOT_PROJECT_FOLDER/test.py  --id sequence_test --config $ROOT_PROJECT_FOLDER/config_files/config_sequence_$SLURM_ARRAY_TASK_ID.json --output-folder sequences --save
+# Train the base model
+python3 $ROOT_PROJECT_FOLDER/train.py --id $MODEL_ID --config config_train_base_model-$CONFIG_TYPE.json --output-folder base_models --save
 
-# PARTIAL LSTM-AE (TOPOLOGIES)
-#python3 $ROOT_PROJECT_FOLDER/train.py --id topology_test --config $ROOT_PROJECT_FOLDER/config_files/config_topology_$SLURM_ARRAY_TASK_ID.json --output-folder topology --save
-#python3 $ROOT_PROJECT_FOLDER/test.py  --id topology_test --config $ROOT_PROJECT_FOLDER/config_files/config_topology_$SLURM_ARRAY_TASK_ID.json --output-folder topology --save
+# Run the optimization technique to find the best mask
+python3 $ROOT_PROJECT_FOLDER/ga_bridge.py --id $MODEL_ID --config config_ga_optimization-${CONFIG_TYPE}_90.json --output-folder base_models --save
 
-# PARTIAL AE
-#python3 $ROOT_PROJECT_FOLDER/train.py --id partial_ae --config $ROOT_PROJECT_FOLDER/config_files/config_partial_ae.json --output-folder ae_run --save
-python3 $ROOT_PROJECT_FOLDER/test.py --id partial_ae --config $ROOT_PROJECT_FOLDER/config_files/config_partial_ae.json --output-folder ae_run --save
+# Reimplement the model using the mask
+python3 $ROOT_PROJECT_FOLDER/Reduce.py --id $MODEL_ID --config config_reduce_model-$CONFIG_TYPE.json --output-folder base_models --save
 
-# FULL AE
-#python3 $ROOT_PROJECT_FOLDER/train.py --id full_ae --config $ROOT_PROJECT_FOLDER/config_files/config_full_ae.json --output-folder ae_run --save
-python3 $ROOT_PROJECT_FOLDER/test.py --id full_ae --config $ROOT_PROJECT_FOLDER/config_files/config_full_ae.json --output-folder ae_run --save
+# Fine-tuning the reimplemented model
+python3 $ROOT_PROJECT_FOLDER/Finetuning.py --id $MODEL_ID --config config_fune-tuning_model-$CONFIG_TYPE.json --save
+
+# Get the metrics of three models (base, reimplemented and fine-tuned)
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder base_models --save
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder pruned_models --save
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder fine-tuned_models --save
+
+CONFIG_TYPE=weekly
+
+# Train the base model
+python3 $ROOT_PROJECT_FOLDER/train.py --id $MODEL_ID --config config_train_base_model-$CONFIG_TYPE.json --output-folder base_models --save
+
+# Run the optimization technique to find the best mask
+python3 $ROOT_PROJECT_FOLDER/ga_bridge.py --id $MODEL_ID --config config_ga_optimization-${CONFIG_TYPE}_90.json --output-folder base_models --save
+
+# Reimplement the model using the mask
+python3 $ROOT_PROJECT_FOLDER/Reduce.py --id $MODEL_ID --config config_reduce_model-$CONFIG_TYPE.json --output-folder base_models --save
+
+# Fine-tuning the reimplemented model
+python3 $ROOT_PROJECT_FOLDER/Finetuning.py --id $MODEL_ID --config config_fune-tuning_model-$CONFIG_TYPE.json --save
+
+# Get the metrics of three models (base, reimplemented and fine-tuned)
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder base_models --save
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder pruned_models --save
+python3 $ROOT_PROJECT_FOLDER/test.py --id $MODEL_ID --config config_compute_metrics-$CONFIG_TYPE.json --output-folder fine-tuned_models --save
 
 conda deactivate

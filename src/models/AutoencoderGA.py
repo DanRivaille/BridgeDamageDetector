@@ -2,20 +2,25 @@ from torch import nn
 
 
 class Autoencoder(nn.Module):
-    def __init__(self, input_length, layer_to_mask: str):
+    def __init__(self, input_length: int,
+                 layer_to_mask: str,
+                 first_layer_size: int,
+                 bottleneck_layer_size: int,
+                 last_layer_size: int
+                 ):
         super().__init__()
         self.layer_to_mask = layer_to_mask
         self.input_length = input_length
         self.encoder = nn.Sequential(
-            nn.Linear(input_length, 32),
+            nn.Linear(input_length, first_layer_size),
             nn.Tanh(),
-            nn.Linear(32, 16),
+            nn.Linear(first_layer_size, bottleneck_layer_size),
             nn.Tanh(),
         )
         self.decoder = nn.Sequential(
-            nn.Linear(16, 32),
+            nn.Linear(bottleneck_layer_size, last_layer_size),
             nn.Tanh(),
-            nn.Linear(32, input_length),
+            nn.Linear(last_layer_size, input_length),
             nn.Tanh(),
         )
 

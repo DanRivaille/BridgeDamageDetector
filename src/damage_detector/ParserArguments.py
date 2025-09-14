@@ -24,7 +24,7 @@ class ParserArguments:
         self.__parser.add_argument("-s", "--save", help="Save the trained model and its results", default=False,
                                    action='store_true')
         self.__parser.add_argument("-t", "--test", help="Run the test process", default=False, action='store_true')
-        self.__parser.add_argument("-o", "--output-folder", nargs="?", help="The folder name to save the runs.",
+        self.__parser.add_argument("-o", "--output-folder", help="The folder name to save the runs.",
                                    default="example")
 
     @property

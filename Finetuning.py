@@ -1,5 +1,6 @@
 import os
 import time
+import json
 
 from torch import nn
 from torch.utils.data import DataLoader
@@ -9,17 +10,15 @@ from torch import load
 from src.damage_detector.CommonPath import CommonPath
 from src.damage_detector.ConfigParams import ConfigParams
 from src.damage_detector.ParserArguments import ParserArguments
-from src.models.Autoencoder import Autoencoder
+from src.models.AutoencoderGA import Autoencoder
 from src.models.CustomDataset import CustomDataset
 from src.damage_detector.utils import __get_device, build_model_folder_path, load_data
 
 if __name__ == '__main__':
     args = ParserArguments()
-
     config_params = ConfigParams.load(os.path.join(CommonPath.CONFIG_FILES_FOLDER.value, args.config_filename))
 
     sequences_length = config_params.get_params('global_variables').get('sequences_length')
-
 
     train_data, validation_data = load_data(config_params, is_train=True)
 
@@ -35,10 +34,19 @@ if __name__ == '__main__':
     validation_set = CustomDataset(validation_data)
     validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=False)
 
-    model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
-    model_path = os.path.join(model_folder, 'model_reduced.pth')
+    fine_tuned_model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), 'pruned_models')
+    model_path = os.path.join(fine_tuned_model_folder, 'model_trained.pth')
 
-    model = Autoencoder(sequences_length)
+    model_dimension_path = os.path.join(fine_tuned_model_folder, 'model_dimensions.json')
+    assert os.path.isfile(model_dimension_path), "Model dimension file doesn't exists!"
+    with open(model_dimension_path, 'r') as model_dimension_file:
+      model_dimension = json.load(model_dimension_file)
+
+    encoder_size = model_dimension['first']
+    bottleneck_size = model_dimension['bottleneck']
+    decoder_size = model_dimension['decoder']
+
+    model = Autoencoder(sequences_length, '', encoder_size, bottleneck_size, decoder_size)
     model.load_state_dict(load(model_path))
     model.eval()
     model.to(device_to_use)
@@ -71,19 +79,27 @@ if __name__ == '__main__':
       train_error.append(loss.item())
       validation_error.append(validation_loss.item())
 
-      
-      print(f'epoch [{epoch + 1}/{num_epochs}], loss:{loss.item(): .4f}, valid_loss:{validation_loss.item(): .4f}')
-      
+      if epoch % 5 == 0:
+        print(f'epoch [{epoch} / {num_epochs}] - loss:{loss.item(): .4f} - valid_loss:{validation_loss.item(): .4f}')
 
     elapsed_time = time.time() - start_time
 
-    print(f"Tiempo de ejecucion {elapsed_time}")
+    print(f"Total time {elapsed_time}")
     print(f"Best train loss {min(train_error)}")
     print(f"Best validation loss {min(validation_error)}")
 
     if args.save:
-      model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), args.folder_name)
-      os.makedirs(model_folder, exist_ok=True)
+      fine_tuned_model_folder = build_model_folder_path(args.model_id, config_params.get_params('id'), 'fine-tuned_models')
+      os.makedirs(fine_tuned_model_folder, exist_ok=True)
 
-      model_path = os.path.join(model_folder, 'model_reduced_ft.pth')
+      model_path = os.path.join(fine_tuned_model_folder, 'model_trained.pth')
       save(model.state_dict(), model_path)
+
+      model_dimension_path = os.path.join(fine_tuned_model_folder, 'model_dimensions.json')
+      model_dimension = {
+        "first": model.encoder[0].out_features,
+        "bottleneck": model.encoder[2].out_features,
+        "decoder": model.decoder[0].out_features
+      }
+      with open(model_dimension_path, 'w') as model_dimension_file:
+        json.dump(model_dimension, model_dimension_file)

@@ -1,0 +1,28 @@
+{
+  "id": "month",
+  "global_variables": {
+    "sequences_length": 512
+  },
+  "train_params": {
+    "batch_size": 64
+  },
+  "ga_params": {
+    "population_size": 20,
+    "n_generations": 1200,
+    "p_mutate": 0.05,
+    "p_cross": 0.9,
+    "proportion_rate": 0.8,
+    "to_mask": "bottleneck"
+  },
+  "data_params": {
+    "sensor_number": 0,
+    "train_data" : {
+      "first_date": "01/02/1998",
+      "last_date": "01/02/1998"
+    },
+    "validation_train_data": {
+      "first_date": "03/02/1998",
+      "last_date": "07/02/1998"
+    }
+  }
+}
